@@ -1,0 +1,82 @@
+# --- Python / Notebooks ---
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.ipynb_checkpoints/
+
+# --- Ambientes / Secrets ---
+.venv/
+.env
+.env.*
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# --- Build / Test ---
+build/
+dist/
+htmlcov/
+
+# --- Logs ---
+logs/
+*.log
+
+# --- Caches de treino / libs ML ---
+catboost_info/
+
+# --- BINÁRIOS DE MODELO (sempre fora do Git) ---
+*.joblib
+*.pkl
+
+# =========================
+#  Dados e artefatos gerados
+# =========================
+
+# data/: ignore tudo, exceto um README (placeholder)
+data/**
+!data/
+!data/README.md
+!data/**/.gitkeep
+
+# artifacts/: ignore tudo, EXCETO JSONs e README
+artifacts/**
+!artifacts/
+!artifacts/**/*.json
+!artifacts/**/README.md
+!artifacts/**/.gitkeep
+artefatos_artigo_2D-AEF/
+
+# outputs/: ignore tudo, EXCETO relatórios .md e READMEs
+outputs/**
+!outputs/
+!outputs/**/*.md
+!outputs/**/README.md
+!outputs/**/.gitkeep
+
+# reports/: manter .md e CSV consolidados; ignorar artefatos pesados
+reports/**/confusion_matrix*.png
+reports/**/f1_per_class*.png
+reports/**/preds.csv
+
+# por padrão o xai/ é ignorado, mas liberamos csv/md consolidados
+reports/**/xai/**
+!reports/**/xai/
+!reports/**/xai/*.md
+!reports/**/xai/*.csv
+
+!reports/**/*.md
+!reports/**/README.md
+
+*.zip
+
+results/
+figs/

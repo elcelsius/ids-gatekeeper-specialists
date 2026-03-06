@@ -1,0 +1,12 @@
+{
+  "f1_macro": 0.89006922185169,
+  "accuracy": 0.8984321978316537,
+  "n": 175341,
+  "labels": [
+    "0",
+    "1"
+  ],
+  "preds_csv": "outputs/unsw_bin/preds.csv",
+  "out_dir": "reports/unsw_bin",
+  "dataset_tag": "unsw_bin"
+}

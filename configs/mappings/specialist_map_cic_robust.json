@@ -1,0 +1,81 @@
+{
+  "target_col": "label",
+  "classes": [
+    "Benign",
+    "Others"
+  ],
+  "class_encoding": {
+    "0": "Benign",
+    "1": "Others"
+  },
+  "models_used": [
+    "lgbm",
+    "xgb",
+    "cat",
+    "sk_hgb",
+    "sk_rf"
+  ],
+  "specialists": {
+    "Benign": {
+      "model_key": "sk_rf",
+      "feature_set_name": "CIC_RB_FS_2",
+      "k": 20,
+      "f1_k": 0.999343573585401,
+      "latency_ms": 0.0015463337498658803,
+      "features": [
+        "fwd_iat_std",
+        "fwd_iat_max",
+        "fwd_iat_min",
+        "bwd_iat_tot",
+        "bwd_iat_mean",
+        "bwd_iat_std",
+        "bwd_iat_max",
+        "bwd_iat_min",
+        "fwd_psh_flags",
+        "bwd_psh_flags",
+        "fwd_urg_flags",
+        "bwd_urg_flags",
+        "fwd_header_len",
+        "bwd_header_len",
+        "fwd_pkts_s",
+        "bwd_pkts_s",
+        "pkt_len_min",
+        "pkt_len_max",
+        "pkt_len_mean",
+        "pkt_len_std"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_cic_robust\\Benign\\model.joblib"
+    },
+    "Others": {
+      "model_key": "sk_rf",
+      "feature_set_name": "CIC_RB_FS_2",
+      "k": 20,
+      "f1_k": 0.999967187940912,
+      "latency_ms": 0.0015488687498873331,
+      "features": [
+        "fwd_iat_std",
+        "fwd_iat_max",
+        "fwd_iat_min",
+        "bwd_iat_tot",
+        "bwd_iat_mean",
+        "bwd_iat_std",
+        "bwd_iat_max",
+        "bwd_iat_min",
+        "fwd_psh_flags",
+        "bwd_psh_flags",
+        "fwd_urg_flags",
+        "bwd_urg_flags",
+        "fwd_header_len",
+        "bwd_header_len",
+        "fwd_pkts_s",
+        "bwd_pkts_s",
+        "pkt_len_min",
+        "pkt_len_max",
+        "pkt_len_mean",
+        "pkt_len_std"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_cic_robust\\Others\\model.joblib"
+    }
+  }
+}
+

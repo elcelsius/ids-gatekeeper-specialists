@@ -1,0 +1,76 @@
+{
+  "classes": [
+    0,
+    1
+  ],
+  "models_used": [
+    "lgbm",
+    "xgb",
+    "cat",
+    "sk_hgb",
+    "sk_rf"
+  ],
+  "specialists": {
+    "0": {
+      "model_key": "lgbm",
+      "feature_set_name": "UNSW_FS_2",
+      "k": 20,
+      "f1_k": 0.971682249276922,
+      "latency_ms": 0.0012254630466974586,
+      "features": [
+        "dwin",
+        "tcprtt",
+        "synack",
+        "ackdat",
+        "smean",
+        "dmean",
+        "trans_depth",
+        "response_body_len",
+        "ct_srv_src",
+        "ct_state_ttl",
+        "ct_dst_ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+        "ct_dst_src_ltm",
+        "is_ftp_login",
+        "ct_ftp_cmd",
+        "ct_flw_http_mthd",
+        "ct_src_ltm",
+        "ct_srv_dst",
+        "is_sm_ips_ports"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_unsw_bin\\0\\model.joblib"
+    },
+    "1": {
+      "model_key": "lgbm",
+      "feature_set_name": "UNSW_FS_2",
+      "k": 20,
+      "f1_k": 0.9766978469031937,
+      "latency_ms": 0.0012214611047574471,
+      "features": [
+        "dwin",
+        "tcprtt",
+        "synack",
+        "ackdat",
+        "smean",
+        "dmean",
+        "trans_depth",
+        "response_body_len",
+        "ct_srv_src",
+        "ct_state_ttl",
+        "ct_dst_ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+        "ct_dst_src_ltm",
+        "is_ftp_login",
+        "ct_ftp_cmd",
+        "ct_flw_http_mthd",
+        "ct_src_ltm",
+        "ct_srv_dst",
+        "is_sm_ips_ports"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_unsw_bin\\1\\model.joblib"
+    }
+  }
+}
+

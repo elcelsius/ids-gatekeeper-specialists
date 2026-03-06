@@ -1,0 +1,14 @@
+{
+  "target_col": "label",
+  "classes": [
+    "Benign",
+    "Others"
+  ],
+  "class_encoding": {
+    "0": "Benign",
+    "1": "Others"
+  },
+  "models_used": [],
+  "specialists": {}
+}
+

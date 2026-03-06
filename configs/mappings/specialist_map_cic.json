@@ -1,0 +1,76 @@
+{
+  "classes": [
+    "Benign",
+    "Others"
+  ],
+  "models_used": [
+    "lgbm",
+    "xgb",
+    "cat",
+    "sk_hgb",
+    "sk_rf"
+  ],
+  "specialists": {
+    "Benign": {
+      "model_key": "cat",
+      "feature_set_name": "PSO_5",
+      "k": 20,
+      "f1_k": 1.0,
+      "latency_ms": 0.00031689125007687834,
+      "features": [
+        "bwd_iat_min",
+        "active_max",
+        "pkt_len_var",
+        "active_mean",
+        "active_min",
+        "active_std",
+        "totlen_fwd_pkts",
+        "subflow_fwd_byts",
+        "subflow_bwd_byts",
+        "totlen_bwd_pkts",
+        "init_fwd_win_byts",
+        "dst_port",
+        "init_bwd_win_byts",
+        "bwd_header_len",
+        "pkt_len_max",
+        "bwd_pkt_len_max",
+        "fwd_header_len",
+        "fwd_pkt_len_max",
+        "bwd_pkt_len_std",
+        "pkt_len_std"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_cic\\Benign\\model.joblib"
+    },
+    "Others": {
+      "model_key": "cat",
+      "feature_set_name": "PSO_5",
+      "k": 20,
+      "f1_k": 1.0,
+      "latency_ms": 0.0003193612501490861,
+      "features": [
+        "bwd_iat_min",
+        "active_max",
+        "pkt_len_var",
+        "active_mean",
+        "active_min",
+        "active_std",
+        "totlen_fwd_pkts",
+        "subflow_fwd_byts",
+        "subflow_bwd_byts",
+        "totlen_bwd_pkts",
+        "init_fwd_win_byts",
+        "dst_port",
+        "init_bwd_win_byts",
+        "bwd_header_len",
+        "pkt_len_max",
+        "bwd_pkt_len_max",
+        "fwd_header_len",
+        "fwd_pkt_len_max",
+        "bwd_pkt_len_std",
+        "pkt_len_std"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_cic\\Others\\model.joblib"
+    }
+  }
+}
+

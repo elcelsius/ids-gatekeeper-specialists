@@ -1,0 +1,3 @@
+dataset,accuracy,dataset_tag,f1_macro,labels,n,out_dir,preds_csv
+UNSW-NB15,0.900987,unsw,0.892938,['0', '1'],175341,reports/UNSW,outputs/eval_unsw/preds.csv
+CIC-IDS2018,1.000000,cic,1.000000,['Benign', 'Others'],100000,reports/cic,outputs/eval_cic/preds.csv
