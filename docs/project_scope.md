@@ -12,7 +12,7 @@ Este repositório suporta o segundo artigo da disciplina de IA, derivado do 2D-A
 
 ## Escopo acadêmico
 
-- Estruturar escrita do artigo em `article/`.
+- Estruturar escrita do artigo em `artigo/`.
 - Manter plano de experimentos e documentação de decisão em `docs/`.
 
 ## Fora de escopo nesta reorganização

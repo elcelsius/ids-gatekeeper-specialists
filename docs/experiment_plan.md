@@ -12,7 +12,7 @@ Executar e documentar experimentos de IDS para alimentar o artigo acadêmico com
 4. Treinar especialistas em `artifacts/trained_models/`.
 5. Salvar/atualizar mapas em `configs/mappings/`.
 6. Rodar inferência e avaliação, consolidando evidências em `reports/`.
-7. Transferir resultados validados para `article/06_results.md` e discussão.
+7. Transferir resultados validados para `artigo/06_resultados.md` e discussão.
 
 ## Critérios de registro
 

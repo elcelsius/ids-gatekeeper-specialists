@@ -21,7 +21,7 @@ O foco técnico permanece em **IA aplicada à detecção de intrusões (IDS)**, 
 
 ```text
 artigo-ia/
-├── article/                    # escrita do artigo (seções e rascunho consolidado)
+├── artigo/                     # escrita do artigo (seções e rascunho consolidado)
 ├── artifacts/
 │   ├── feature_pools/          # pools de features gerados
 │   ├── trained_models/         # modelos treinados e diretórios de especialistas
@@ -80,5 +80,5 @@ infer-twostage \
 ## Observações
 
 - Não versionar dados brutos e binários pesados.
-- Não inventar resultados: `article/` e `docs/` usam placeholders estruturados.
+- Não inventar resultados: `artigo/` e `docs/` usam placeholders estruturados.
 - Compatível com `pyproject.toml` e `requirements.txt` atuais.
