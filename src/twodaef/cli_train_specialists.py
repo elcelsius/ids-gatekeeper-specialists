@@ -39,6 +39,15 @@ def _load_feature_pool(fp: Path) -> dict:
     return data
 
 def main() -> None:
+    """
+    Interface CLI para acionar a criação e treinamento completo da Matriz de Especialistas (2D-AEF).
+    
+    Explicação:
+    Treinar os especialistas é o coração analítico do projeto! Eles são modelos parrudos 
+    (como XGBoost e LightGBM) que olham com zoom os pacotes encaminhados pelo Gatekeeper.
+    Este arquivo possibilita automatizar o treino em lote, garantindo que usemos as sub-listas de attributes
+    do "feature_pool" para manter a diversidade do sistema.
+    """
     ap = argparse.ArgumentParser(description="Treinar Matriz de Especialistas (2D-AEF).")
     ap.add_argument("--train_csv", type=Path, required=True)
     ap.add_argument("--target_col", type=str, required=True)

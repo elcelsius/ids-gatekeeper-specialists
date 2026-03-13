@@ -1,12 +1,18 @@
 """
 Baseline global (XGBoost) para CIC-IDS2018 robusto (sem porta de destino).
 
-Fluxo:
-- Lê data/train_cic_robust.csv e data/cic_eval_robust.csv.
-- Mapeia rótulos para binário: Benign/Attack.
-- Usa todas as colunas numéricas (exceto label) como features.
-- Treina XGBClassifier único e avalia em cic_eval_robust.
-- Salva métricas e matriz de confusão em outputs/cic_robust_xgb_baseline/.
+Explicação para estudantes:
+O que é um "Baseline"? 
+Em Inteligência Artificial, um baseline é o "modelo mais básico possível" ou o 
+"padrão da indústria" que você usa como régua de comparação. Se o seu modelo 
+novo ou seu funil complexo (como o nosso de Especialistas) não superar este 
+XGBoost "simples e poderoso", então a sua complexidade não se justifica na prática!
+
+Fluxo do Baseline:
+- Lê as bases de dados e mapeia rótulos para binário: Benign/Attack.
+- Usa todas as colunas numéricas (exceto o rótulo) como características (features).
+- Treina um XGBClassifier único e global (sem divisão por especialistas).
+- Avalia no conjunto de teste e salva as métricas e a matriz de confusão.
 """
 from __future__ import annotations
 

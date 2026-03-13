@@ -5,6 +5,14 @@ from loguru import logger
 from twodaef.xai.shap_explain import run_xai_for_specialist
 
 def main():
+    """
+    Interface CLI para gerar explicações visuais e numéricas (SHAP / LIME) para um Especialista.
+    
+    Explicação:
+    No fluxo de Machine Learning moderno (XAI), não basta o modelo acertar. Temos que saber o PORQUÊ.
+    Com este arquivo você roda na linha de comando e ele cospe os gráficos dizendo:
+    "A Classe X foi escolhida por causa da variável Y e Z".
+    """
     ap = argparse.ArgumentParser(description="XAI para especialista (SHAP/LIME).")
     ap.add_argument("--specialist_map", type=Path, required=True, help="artifacts/specialist_map.json")
     ap.add_argument("--class_key", type=str, required=True, help="chave da classe no mapa (ex.: '0', '1', 'DoS', 'Web')")

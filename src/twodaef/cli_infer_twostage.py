@@ -5,6 +5,15 @@ from loguru import logger
 from twodaef.infer.two_stage import TwoStageConfig, TwoStageInferencer
 
 def main():
+    """
+    Interface CLI para rodar o pipeline completo de Inferência em 2 Estágios de forma prática.
+    
+    Explicação educativa:
+    É aqui que a mágica de produção acontece! 
+    1. O tráfego passa pelo Gatekeeper (estágio rápido e barato).
+    2. O tráfego que é ataque é encaminhado para os Especialistas (estágio minucioso).
+    Isso retorna as predições finais marcando quanto tempo (latência) foi gasto.
+    """
     ap = argparse.ArgumentParser(description="Inferência 2 estágios (Gatekeeper -> Especialista).")
     ap.add_argument("--gatekeeper_model", type=Path, required=True)
     ap.add_argument("--gatekeeper_features", type=Path, required=True, help="arquivo .txt com uma feature por linha")

@@ -1,3 +1,10 @@
+"""
+Explicação para Estudantes:
+Este script pega aquele CSV de análise de importâncias (gerado no módulo XAI SHAP)
+e cria um documento "Brief" (Resumo) em formato limpo Markdown.
+Ele é ideal para colocar nos Anexos do seu TCC ou Artigo, listando de forma bem legível e
+formatada o Top-K de características que definiram cada tipo de ataque detectado.
+"""
 from __future__ import annotations
 from pathlib import Path
 import argparse

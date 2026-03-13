@@ -7,6 +7,14 @@ from loguru import logger
 from twodaef.features.pools import PoolConfig, build_feature_pool
 
 def main():
+    """
+    Interface CLI para gerar o Feature Pool (Conjunto diversificado de características).
+    
+    Explicação:
+    Ao invés de tentar usar todas as variáveis da base de dados ao mesmo tempo, nós dividimos o 
+    conhecimento em "Pools". Isso simula algoritmos bio-inspirados (PSO, GWO) gerando grupos 
+    menores de features altamente ricas em Informação Mútua (Mutual Information).
+    """
     ap = argparse.ArgumentParser(description="Gerar pool de feature sets (PSO/GWO/FFA-like).")
     ap.add_argument("--csv", type=Path, required=True, help="CSV de amostra (ex.: um chunk de CIC-IDS-2018).")
     ap.add_argument("--target_col", type=str, required=True, help="Nome da coluna alvo.")

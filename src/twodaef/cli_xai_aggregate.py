@@ -5,6 +5,13 @@ from twodaef.reports.aggregate_xai import aggregate_xai
 
 
 def main() -> None:
+    """
+    Interface CLI para agrupar as saídas soltas de interpretabilidade (SHAP/LIME).
+    
+    Explicação:
+    Como nós rodamos arquivos XAI para vários especialistas independentes (cada ataque), precisamos 
+    juntar as explicações individuais em um único relatório legível consolidado para análise acadêmica e auditoria.
+    """
     parser = argparse.ArgumentParser(
         description="Agrega explicações SHAP por classe e gera CSV/MD consolidados."
     )

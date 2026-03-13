@@ -10,33 +10,53 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-# Repetições para cronometria robusta (min de várias execuções)
-GK_BENCH_REPEATS = 7     # gatekeeper (batch)
-S2_BENCH_REPEATS = 3     # especialista (por linha)
+# --- Constantes para validação de desempenho ---
+# Definem quantas vezes cada parte do modelo será executada (repetições) para medir o tempo médio (benchmarking)
+# Isso garante que a medição seja robusta e não distorcida por picos temporários do sistema.
+GK_BENCH_REPEATS = 7     # Repetições para o gatekeeper (em modo "batch", avaliando todos de uma vez)
+S2_BENCH_REPEATS = 3     # Repetições para o especialista (avaliando linha por linha, de forma detalhada)
 
 
 @dataclass
 class TwoStageConfig:
-    gatekeeper_model: str
-    gatekeeper_features_file: str  # arquivo texto com uma feature por linha
-    specialist_map_json: str       # artifacts/specialist_map.json
-    input_csv: str                 # dados para inferência
-    output_csv: str                # onde salvar as predições
-    fill_missing: float = 0.0      # valor para preencher colunas ausentes
-    gatekeeper_labelmap_json: Optional[str] = None  # mapeia saída do GK -> chave do especialista
+    """
+    Configurações gerais para o inferenciador (quem faz a predição) de Dois Estágios.
+    O primeiro estágio é o 'Gatekeeper' (rápido, genérico) e o segundo são os 'Especialistas' (lentos, precisos).
+    """
+    gatekeeper_model: str                  # Caminho para o modelo treinado do Gatekeeper (.pkl, .joblib)
+    gatekeeper_features_file: str          # Arquivo texto com a lista de atributos (features) do Gatekeeper (1 por linha)
+    specialist_map_json: str               # JSON ligando as saídas do Gatekeeper aos modelos Especialistas
+    input_csv: str                         # Tabela CSV contendo os dados a serem classificados
+    output_csv: str                        # Caminho e nome do arquivo CSV de saída (resultado das predições)
+    fill_missing: float = 0.0              # Valor padrão usado para preencher colunas (features) que estão faltando
+    gatekeeper_labelmap_json: Optional[str] = None  # (Opcional) Dicionário mapeando da saída original do GK para a chave correta do especialista
 
 
 class TwoStageInferencer:
+    """
+    Classe principal de Inferência (predição/teste) da Arquitetura de Dois Estágios.
+    O fluxo principal de inferência acontece aqui:
+      1. Os dados chegam ao modelo.
+      2. O Gatekeeper avalia todas as amostras rapidamente.
+      3. Dependendo da classificação do Gatekeeper, cada amostra pode ser enviada para um 'Especialista'.
+      4. O resultado final e as métricas de tempo (latência) são calculados.
+    """
     def __init__(self, cfg: TwoStageConfig):
         self.cfg = cfg
+        # Carrega o modelo de IA do Gatekeeper
         self.gatekeeper = self._load_gatekeeper(cfg.gatekeeper_model)
+        # Carrega a lista de variáveis (features) necessárias para o Gatekeeper rodar
         self.gk_features = self._load_feature_list(cfg.gatekeeper_features_file)
-        self.spec_map, self.meta = self._load_specialists(cfg.specialist_map_json)  # {class_name: {...}}, meta
+        # Carrega o mapa/dicionário de modelos Especialistas baseados nas saídas possíveis do Gatekeeper
+        self.spec_map, self.meta = self._load_specialists(cfg.specialist_map_json)
+        
+        # Carrega metadados que ajudam a traduzir/decodificar as classes
         self.class_encoding = self.meta.get("class_encoding") if self.meta else None
         self.classes_list = self.meta.get("classes") if self.meta else None
         self.target_col = self.meta.get("target_col") if self.meta else None
 
-        # Auto-descoberta de labelmap se não for fornecido (apenas para cenários binários)
+        # Tenta descobrir o arquivo 'labelmap' (mapeamento de labels) de forma automática 
+        # caso não tenha sido explicitamente configurado no 'cfg'. Geralmente aplicável a problemas binários.
         lm_path: Optional[str] = cfg.gatekeeper_labelmap_json
         if not lm_path and self.classes_list and len(self.classes_list) <= 2:
             cand = [
@@ -48,10 +68,12 @@ class TwoStageInferencer:
                 if p.exists():
                     lm_path = str(p)
                     break
-        self.labelmap = self._load_labelmap(lm_path)  # pode ser {} (multi-classe típico)
+        # Carrega o mapa final
+        self.labelmap = self._load_labelmap(lm_path)
 
     @staticmethod
     def _load_gatekeeper(path: str):
+        """Carrega e retorna o arquivo serializado (joblib) contendo o modelo Gatekeeper."""
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"Gatekeeper não encontrado: {p}")
@@ -59,12 +81,14 @@ class TwoStageInferencer:
 
     @staticmethod
     def _load_feature_list(path: str) -> List[str]:
+        """Lê um arquivo de texto linha a linha e retorna a lista de atributos (features)."""
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"Arquivo de features do gatekeeper não encontrado: {p}")
         feats: List[str] = []
         for line in p.read_text(encoding="utf-8").splitlines():
             s = line.strip()
+            # Ignora linhas em branco ou comentários
             if not s or s.startswith("#"):
                 continue
             feats.append(s)
@@ -72,6 +96,10 @@ class TwoStageInferencer:
 
     @staticmethod
     def _load_specialists(path: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Abre o arquivo JSON `specialist_map` (dicionário associando saídas do Gatekeeper aos especialistas)
+        e carrega em memória todos os modelos especialistas associados e suas respectivas features.
+        """
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         specs: Dict[str, Any] = {}
         for cls_name, payload in d.get("specialists", {}).items():
@@ -79,16 +107,21 @@ class TwoStageInferencer:
             if not mpath.exists():
                 logger.warning(f"Modelo do especialista ausente para classe {cls_name}: {mpath}")
                 continue
+            
             model = joblib.load(mpath)
             feats = list(payload["features"])
+            
+            # Mapeia tudo por classe identificada no JSON
             specs[str(cls_name)] = {
                 "model": model,
                 "features": feats,
                 "model_key": payload.get("model_key", ""),
                 "feature_set_name": payload.get("feature_set_name", "")
             }
+            
         if not specs:
             raise RuntimeError("Nenhum especialista carregado a partir do mapa.")
+            
         meta = {
             "classes": d.get("classes") or [],
             "class_encoding": d.get("class_encoding") or {},
@@ -98,6 +131,10 @@ class TwoStageInferencer:
 
     @staticmethod
     def _load_labelmap(path: Optional[str]) -> Dict[str, str]:
+        """
+        Carrega um dicionário (JSON) usado para converter os labels internos/físicos que
+        o Gatekeeper emite para labels ou strings padronizadas esperadas pelos especialistas.
+        """
         if not path:
             return {}
         p = Path(path)
@@ -106,7 +143,7 @@ class TwoStageInferencer:
             return {}
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
-            # normaliza chaves/valores para string
+            # normaliza todas as chaves e valores como strings, prevenindo erros de tipo.
             return {str(k): str(v) for k, v in d.items()}
         except Exception as e:
             logger.warning(f"Falha ao ler label map {p}: {e}")
@@ -115,17 +152,17 @@ class TwoStageInferencer:
     @staticmethod
     def _heuristic_bin_map(x: Any) -> Optional[str]:
         """
-        Heurística: se rótulo textual contém 'benign' ou 'normal' => '0', senão => '1'.
-        Inteiros permanecem como '0'/'1'.
+        Função de segurança (heurística) para casos binários:
+        Converte uma classe textual em uma representação '0' ou '1'.
+        Exemplo: 'benign' ou 'normal' torna-se '0' (tráfego ok).
+        Outros, possivelmente maliciosos, tornam-se '1'.
         """
         try:
-            # se é número (ex.: 0/1), normaliza para str e retorna
             if isinstance(x, (int, np.integer)):
                 return str(int(x))
             s = str(x).strip().lower()
             if s in {"0", "1"}:
                 return s
-            # palavras que denotam tráfego benigno
             if any(tok in s for tok in ("benign", "normal", "clean", "legit")):
                 return "0"
             return "1"
@@ -134,9 +171,9 @@ class TwoStageInferencer:
 
     def _decode_label(self, yhat: Any) -> Any:
         """
-        Converte a predição do especialista para o domínio original do target.
-        - Se existir class_encoding/classes no specialist_map, usa o índice para recuperar o rótulo.
-        - Caso contrário, fallback para heurística binária ou retorno direto.
+        Converte a predição bruta final (do especialista) para o texto/classe real do domínio.
+        Ele tenta usar primeiramente a lista ou enumeração formal (class_encoding) antes de recorrer
+        à função heurística binária.
         """
         # Tenta usar class_encoding explícito
         if self.class_encoding:
@@ -146,7 +183,8 @@ class TwoStageInferencer:
                     return self.class_encoding[key]
             except Exception:
                 pass
-        # Tenta lista de classes (posicional)
+                
+        # Tenta usar a lista de classes baseando-se por posição no array
         if self.classes_list is not None:
             try:
                 idx = int(yhat)
@@ -154,44 +192,57 @@ class TwoStageInferencer:
                     return self.classes_list[idx]
             except Exception:
                 pass
-        # Fallback binário (compatibilidade)
+                
+        # Caso falhe as abordagens acima, usa fallback da heurística binária 
         hb = self._heuristic_bin_map(yhat)
         if hb is not None:
             return int(hb)
+            
+        # Se não mapeou para nada, apenas retorna o predição bruta
         return yhat
 
     def _ensure_columns(self, df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
+        """
+        Garante que o DataFrame (df) possuirá exatamente as colunas solicitadas (cols).
+        Se a coluna não tiver sido provida, será criada e preenchida com um valor default.
+        Isso é vital, pois o modelo de Machine Learning requer uma ordem e quantidade exata de features.
+        """
         df = df.copy()
         for c in cols:
             if c not in df.columns:
                 df[c] = self.cfg.fill_missing
-        # manter ordem
         return df[cols]
 
     def predict_csv(self) -> Tuple[float, float, float]:
-        # 1) carregar dados
+        """
+        O fluxo principal da inferência para um lote de dados contidos em um arquivo CSV.
+        Retorna a métrica de de latência (tempo gasto em média por linha).
+        """
+        # 1. Carrega os dados em um DataFrame (tabela).
         df = pd.read_csv(self.cfg.input_csv)
         n = df.shape[0]
         if n == 0:
             raise ValueError("input_csv não possui linhas.")
 
-        # 2) etapa 1 — gatekeeper
+        # 2. Etapa 1 — Gatekeeper: Pega a matriz correta de features para o Gatekeeper
         Xgk = self._ensure_columns(df, self.gk_features)
 
-        # Alguns modelos salvos do gatekeeper retornam (y_pred, lat_ms) ou (y_pred, meta)
+        # Alguns modelos retornam só as previsões, outros previsões+latência. Tentamos ambos.
         _res = self.gatekeeper.predict(Xgk)
         if isinstance(_res, tuple):
             gk_pred = _res[0]
         else:
             gk_pred = _res
 
-        # garantir shape 1-D
+        # Transforma o array em um formato 1-D simples para facilitar as interações futuras.
         gk_pred = np.asarray(gk_pred).ravel()
 
-        # warm-up para estabilizar caches/JIT
+        # Roda um ciclo rápido apenas como "warm-up" (aquecimento)
+        # Isso acorda as caches do processador e otimizações JIT antes de contar o tempo real.
         _ = self.gatekeeper.predict(Xgk.iloc[: min(512, len(Xgk))])
 
-        # bench robusto do gatekeeper (batch): melhor tempo / n
+        # Benchmark oficial do Gatekeeper no processamento do Batch inteiro. 
+        # Roda o modelo N vezes e pega a execução mais rápida.
         gk_best_ns = None
         for _rep in range(GK_BENCH_REPEATS):
             ns0 = time.perf_counter_ns()
@@ -199,17 +250,20 @@ class TwoStageInferencer:
             ns1 = time.perf_counter_ns()
             dt = ns1 - ns0
             gk_best_ns = dt if (gk_best_ns is None or dt < gk_best_ns) else gk_best_ns
+            
+        # Calcula a média por amostra em milissegundos
         gk_ms = (gk_best_ns / 1e6) / max(1, n)
 
-        # 3) etapa 2 — especialista por linha
+        # 3. Etapa 2 — Especialistas: Itera sobre os exemplos linha-a-linha individualmente
         final_pred: List[int] = []
         spec_used: List[str] = []
         spec_set: List[str] = []
         stage2_times: List[float] = []
-        gk_mapped: List[str] = []  # novo: mapa aplicado na saída do GK
+        gk_mapped: List[str] = []
 
         for i, gp in enumerate(gk_pred):
-            # 3.1) aplica labelmap (se houver)
+            # 3.1) Se existir no Gatekeeper alguma labelmap configurada, converte o label dele 
+            # de acordo com o padrão do especialista aplicável.
             cls: Optional[str] = None
             if self.labelmap:
                 key = str(gp)
@@ -217,24 +271,25 @@ class TwoStageInferencer:
                 if mapped is not None:
                     cls = str(mapped)
 
-            # 3.2) se não mapeou, decide o fallback:
-            # - multi-classe: preserva rótulo do GK
-            # - binário: aplica heurística padrão
+            # 3.2) Se esse mapeamento explicitamente não aconteceu, toma uma decisão de fallback default
             if cls is None:
                 if self.classes_list and len(self.classes_list) > 2:
-                    cls = str(gp)
+                    cls = str(gp)  # Modo Multi-classe preserva a saída como string
                 else:
-                    cls = self._heuristic_bin_map(gp)
+                    cls = self._heuristic_bin_map(gp)  # Modo binário aplica binning heurístico
 
-            # 3.3) se ainda None, usa str direto (último recurso)
             if cls is None:
                 cls = str(gp)
 
-            gk_mapped.append(cls)  # guarda o mapeado (string '0'/'1' na prática do UNSW)
+            # Guarda para debug qual foi a saída que o script achou ter recebido do GK.
+            gk_mapped.append(cls)
 
+            # Tenta pegar qual o especialista vinculado com esta label no Json specialist_map_json
             spec = self.spec_map.get(cls)
+            
+            # Se não localizar Especialista associado...
             if spec is None:
-                # fallback: se multi-classe, devolve o próprio rótulo; senão, coerção segura para binário
+                # O Gatekeeper não repassou para nenhum especialista. O próprio modelo Gatekeeper 'fechou' o veredito.
                 if self.classes_list and len(self.classes_list) > 2:
                     final_pred.append(str(cls))
                 else:
@@ -244,19 +299,22 @@ class TwoStageInferencer:
                         h = self._heuristic_bin_map(cls)
                         yhat_int = int(h) if h is not None else 0
                     final_pred.append(yhat_int)
+                
+                # Como não foi pro Especialista, latência do stage 2 será 0ms pra essa amostra finalizada cedo
                 spec_used.append("fallback_gk")
                 spec_set.append("NA")
                 stage2_times.append(0.0)
                 continue
 
+            # Se encontrou um especialista, ele roda localmente!
             feats = spec["features"]
             model = spec["model"]
-            row_df = df.iloc[[i]]  # manter DataFrame
+            row_df = df.iloc[[i]]
             Xsp = self._ensure_columns(row_df, feats)
 
-            # bench robusto por linha (pega o mínimo de S2_BENCH_REPEATS)
             best_ns = None
             yhat = None
+            # Benchmark linha por linha em repetições robustas
             for _rep in range(S2_BENCH_REPEATS):
                 ns2 = time.perf_counter_ns()
                 yhat = model.predict(Xsp)[0]
@@ -264,21 +322,21 @@ class TwoStageInferencer:
                 dt = ns3 - ns2
                 best_ns = dt if (best_ns is None or dt < best_ns) else best_ns
 
-            # garante inteiro 0/1 para avaliação numérica
+            # Decode final p/ array e grava logs da amostra do "especialista"
             decoded = self._decode_label(yhat)
             final_pred.append(decoded)
             spec_used.append(spec.get("model_key", ""))
             spec_set.append(spec.get("feature_set_name", ""))
-            stage2_times.append(best_ns / 1e6)  # ms
+            stage2_times.append(best_ns / 1e6)  # milissegundos (ms)
 
-        # 4) métricas de latência
+        # 4. Compilando as latências
         stage2_ms = float(np.mean(stage2_times)) if stage2_times else 0.0
         total_ms = gk_ms + stage2_ms
 
-        # 5) salvar CSV de saída
+        # 5. Salva no novo DataFrame e exporta para o CSV requisitado.
         out = df.copy()
         out["pred_gatekeeper"] = gk_pred
-        out["pred_gatekeeper_mapped"] = gk_mapped  # novo: útil p/ depuração e avaliação
+        out["pred_gatekeeper_mapped"] = gk_mapped
         out["pred_final"] = final_pred
         out["specialist_model"] = spec_used
         out["specialist_featureset"] = spec_set
@@ -288,6 +346,8 @@ class TwoStageInferencer:
 
         Path(self.cfg.output_csv).parent.mkdir(parents=True, exist_ok=True)
         out.to_csv(self.cfg.output_csv, index=False)
+        
+        # Loga os detalhes da performance
         logger.success(f"Predições salvas em {self.cfg.output_csv}")
         logger.info(
             f"Latência média — Gatekeeper: {gk_ms:.6f} ms | "

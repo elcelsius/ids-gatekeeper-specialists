@@ -2,6 +2,14 @@ import argparse
 from twodaef.reports.plots_eval import make_eval_plots
 
 def main():
+    """
+    Interface CLI desenhada para pegar as inferências (preds.csv) e plotar gráficos de avaliação.
+    
+    Explicação:
+    Machine Learning se prova visualmente. Este arquivo lê suas predições (do two_stage) 
+    e usa as libs `matplotlib` / `sklearn` para plotar as Barras de F1-Score e 
+    a Matriz de Confusão em alta resolução (.png). Essencial para colocar no seu TCC/Artigo.
+    """
     ap = argparse.ArgumentParser(description="Gera plots (confusion matrix, F1 por classe) a partir de preds.csv.")
     ap.add_argument("--preds_csv", required=False, help="Caminho para preds.csv. Se ausente, usar --dataset_tag.")
     ap.add_argument("--label_col", required=True)

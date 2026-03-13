@@ -5,6 +5,14 @@ from loguru import logger
 from twodaef.utils.io import load_joblib
 
 def main():
+    """
+    Interface CLI que executa inferência apenas usando o modelo Gatekeeper.
+    
+    Explicação:
+    Quer saber se uma requisição é benigna ou "suspeita" usando apenas o filtro inicial rápido?
+    Rode este script! Ele carrega a árvore leve (gatekeeper, em joblib) e faz o split das classes 
+    "0" (Benigno) e "1" (Other), medindo a latência (tempo de resposta) em milissegundos.
+    """
     parser = argparse.ArgumentParser(description="Predição com Gatekeeper.")
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--input_csv", type=Path, required=True)

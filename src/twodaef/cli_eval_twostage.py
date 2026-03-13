@@ -6,6 +6,14 @@ from twodaef.eval.evaluate import run_eval_twostage
 
 
 def main():
+    """
+    Interface CLI (Linha de Comando) para avaliar o modelo de 2 Estágios (Gatekeeper + Especialistas).
+    
+    Explicação para alunos:
+    Este script serve para você testar como o sistema completo performa. 
+    Ele pressupõe que você já rodou a inferência (cli_infer_twostage) e gerou o 'preds.csv'.
+    Aqui, comparamos as predições com os rótulos originais para extrair métricas (Acurácia, F1-Macro).
+    """
     ap = argparse.ArgumentParser()
     ap.add_argument("--gatekeeper_model", required=True, help="(ignorado aqui, apenas coerência com pipeline)")
     ap.add_argument("--gatekeeper_features", required=True, help="(ignorado aqui, apenas coerência com pipeline)")

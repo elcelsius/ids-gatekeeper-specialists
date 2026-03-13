@@ -15,6 +15,15 @@ def read_feature_list(path: Path) -> list[str]:
     return cols
 
 def main():
+    """
+    Interface CLI utilitária para Treinar apenas o modelo Gatekeeper (Primeiro Estágio).
+    
+    Explicação:
+    O Gatekeeper precisa ser "surdo" a tipos complexos de ataque. Seu único objetivo é dizer: 
+    "É Tráfego Normal ou não?"
+    Este script treina uma DecisionTree podada (pouca profundidade) para ganhar a máxima 
+    velocidade de processamento operando na fronteira da rede (borda).
+    """
     parser = argparse.ArgumentParser(description="Treinar Gatekeeper (Decision Tree podada).")
     parser.add_argument("--train_csv", type=Path, required=True)
     parser.add_argument("--target_col", type=str, required=True)

@@ -1,8 +1,15 @@
 """
-Smoke test rápido para validar suporte multi-classe end-to-end:
-- Cria um dataset sintético com 3 classes (strings).
-- Treina gatekeeper + especialistas com target_col="class".
-- Roda infer-twostage e verifica que pred_final está no domínio original (strings).
+Smoke test rápido para validar suporte multi-classe end-to-end.
+
+Explicação para estudantes (O que é Smoke Test?):
+O termo "Teste de Fumaça" vem da engenharia elétrica ("liga o aparelho na tomada; se sair fumaça, tem curto-circuito").
+Em engenharia de software e ML, é um script super rápido que roda partes críticas do seu código num 
+ambiente minúsculo e controlado, só para ter certeza de que o esqueleto do sistema não quebrou.
+
+O que este script faz (sem fumaça!):
+- Cria um dataset sintético artificial minúsculo com 3 classes e valores aleatórios (strings).
+- Treina o modelo inicial (gatekeeper) + os especialistas.
+- Roda o método de inferência e verifica que a saída bate perfeitamente com os domínios originais (strings).
 """
 from __future__ import annotations
 

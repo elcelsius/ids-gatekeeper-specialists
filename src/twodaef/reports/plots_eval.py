@@ -17,9 +17,20 @@ from twodaef.utils.io import (
 
 def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray, Optional[Dict[str, str]]]:
     """
-    Tenta alinhar espaços de rótulos quando tipos diferem (ex.: y_true=['Benign','Others'] e y_pred=[0,1]).
-    Implementa heurística binária 0↔Benign/1↔Others.
-    Retorna (y_true_int, y_pred_int, mapping_str) onde mapping_str (opcional) descreve o mapeamento feito.
+    Tenta alinhar os domínios/rótulos verdadeiros e preditos caso estejam em formatos diferentes.
+    
+    Explicação para estudantes:
+    Na prática de Machine Learning, é muito comum que os dados originais (y_true) estejam como strings 
+    (ex. "Benigno", "Malicioso"), enquanto as predições do modelo (y_pred) estejam como inteiros (0, 1).
+    Isso vai gerar erro na hora de calcular métricas. Esta função tenta consertar esse desalinhamento 
+    de forma automática, adivinhando a correspondência (heurística binária).
+    
+    Args:
+        y_true_raw: O array NumPy com os rótulos corretos originais.
+        y_pred_raw: O array NumPy com os rótulos que o modelo previu.
+    Returns:
+        Um conjunto (Tuple) contendo os índices verdadeiros corrigidos para inteiro, os índices preditos 
+        corrigidos para inteiro, e caso haja tido conversão, um dicionário explicando qual string virou qual inteiro.
     """
     # já inteiros?
     def _to_int_safe(a):
@@ -35,25 +46,36 @@ def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[n
         return y_true_int, y_pred_int, None
 
     # Heurística binária
-    # mapeia strings -> ints
+    # Função auxiliar interna que tenta converter uma string sem padrão para 0 ou 1
     def _str2bin(x: Any) -> Optional[int]:
+        # Formata a string: remove espaços (strip) e deixa tudo em minúsculo (lower)
         s = str(x).strip().lower()
         if s in {"0", "1"}:
             return int(s)
+            
+        # Se na string contiver palavras indicando algo normal/benigno, retornamos a classe 0 (negativa)
         if any(t in s for t in ("benign", "normal", "clean", "legit")):
             return 0
+            
+        # Se na string contiver palavras indicando ataque/anomalia, retornamos a classe 1 (positiva)
         if any(t in s for t in ("mal", "attack", "other", "others", "anomaly", "intrusion")):
             return 1
+            
+        # Retorna None caso a string não caia em nenhuma heurística
         return None
 
     def _map_array(a: np.ndarray) -> Tuple[np.ndarray, bool]:
+        # Percorremos cada valor para aplicar a transformação
         out = []
         for v in a:
             try:
+                # Primeiro, tentamos simplesmente forçar a virar inteiro
                 out.append(int(v))
             except Exception:
+                # Se der erro (ex: não é um número e sim uma palavra), usamos nossa heurística
                 b = _str2bin(v)
                 if b is None:
+                    # Se nossa heurística falhar, descartamos o processo completo
                     return a, False
                 out.append(b)
         return np.asarray(out, dtype=int), True
@@ -72,6 +94,21 @@ def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[n
 
 
 def plot_confusion_matrix(cm: np.ndarray, labels: list[str], out_png: Path, title: str = "Confusion Matrix") -> None:
+    """
+    Desenha e salva uma Matriz de Confusão em formato de imagem (PNG).
+    
+    Explicação para estudantes:
+    A Matriz de Confusão é uma tabela que nos permite visualizar o desempenho de um algoritmo de classificação. 
+    As linhas representam as classes verdadeiras (o que realmente era) e as colunas representam as 
+    classes preditas (o que o modelo achou que era). 
+    A diagonal principal mostra os acertos, enquanto as outras células mostram os erros.
+    
+    Args:
+        cm: Matriz de confusão já calculada (array 2D do NumPy).
+        labels: Nome das classes para colocar nos eixos X e Y.
+        out_png: Caminho onde a imagem será salva.
+        title: Título do gráfico.
+    """
     fig, ax = plt.subplots(figsize=(6, 5), dpi=150)
     im = ax.imshow(cm, interpolation="nearest")
     ax.set_title(title)
@@ -94,6 +131,22 @@ def plot_confusion_matrix(cm: np.ndarray, labels: list[str], out_png: Path, titl
 
 
 def plot_f1_per_class(y_true: np.ndarray, y_pred: np.ndarray, labels: list[str], out_png: Path, title: str = "F1 per class") -> None:
+    """
+    Calcula o F1-Score para cada classe individualmente e gera um gráfico de barras.
+    
+    Explicação para estudantes:
+    O F1-Score é a média harmônica entre a Precisão (Quantos ele acertou do total que disse que era positivo?) 
+    e o Recall (Quantos ele acertou do total de exemplos positivos reais?). 
+    Isso é especialmente importante em dados desbalanceados (ex: mais ataques do que tráfego normal), 
+    onde a Acurácia simples pode esconder que o modelo está errando muito na classe minoritária.
+    
+    Args:
+        y_true: Array NumPy com os rótulos verdadeiros.
+        y_pred: Array NumPy com as previsões do modelo.
+        labels: Lista com os nomes das classes legíveis por humanos.
+        out_png: Local para salvar a imagem PNG.
+        title: Título do gráfico a ser plotado no topo.
+    """
     # calcula f1 individual por label na ordem de `labels`
     f1s = []
     uniq = sorted(set(y_true) | set(y_pred))
@@ -125,11 +178,15 @@ def plot_f1_per_class(y_true: np.ndarray, y_pred: np.ndarray, labels: list[str],
 
 def _resolve_preds_csv(preds_csv: str | None, dataset_tag: str | None) -> Path:
     """
-    Resolve automaticamente o caminho do preds.csv quando:
-    - preds_csv é fornecido: usa direto (precisa existir).
-    - caso contrário, tenta usar dataset_tag para achar:
-        outputs/eval_<tag>/preds.csv
-        reports/<TAG>/preds.csv
+    Tenta localizar o arquivo `preds.csv` de forma inteligente, caso o usuário não informe o caminho exato,
+    procurando dentro de pastas de saída conhecidas com base na tag do dataset.
+    
+    Args:
+        preds_csv: Caminho direto passado pelo usuário (se existir).
+        dataset_tag: Sigla/nome do dataset (ex: 'unsw' ou 'cic') usado para adivinhar a pasta.
+        
+    Returns:
+        Um objeto Path apontando para o arquivo válido de predições.
     """
     if preds_csv:
         p = Path(preds_csv)
@@ -165,12 +222,24 @@ def make_eval_plots(
     allow_small_eval: bool = False,
 ) -> Dict[str, Any]:
     """
-    Lê o preds.csv gerado pelo two-stage, recomputa métricas e salva:
-      - confusion_matrix[_<tag>].png
-      - f1_per_class[_<tag>].png
-      - metrics_again.json (métricas recomputadas)
-    Se min_rows estiver definido (ou heurística do dataset acionada), falha se n < min_rows,
-    a menos que allow_small_eval=True.
+    Função principal/orquestradora que vai ler o arquivo de previsões (preds.csv), 
+    calcular métricas oficiais (acurácia e f1 score macro) e também desenhar os gráficos 
+    (matriz de confusão e barras de F1).
+    
+    Ela inclui defesas contra execuções acidentais em subconjuntos (ex, se tiver poucas linhas),
+    o que poderia gerar métricas superestimadas ou incorretas de forma ilusória.
+    
+    Args:
+        preds_csv: Caminho para o CSV contendo as predições.
+        label_col: Nome da coluna que possui os dados reais corretos (y_true).
+        out_dir: Diretório onde serão gravados os resultados (pngs, métricas.json).
+        dataset_tag: Identificador do dataset (ex 'cic' ou 'unsw').
+        class_labels: Rótulos customizados para eixos X e Y.
+        min_rows: Limiar de segurança de quantidade mínima de linhas nas amostras.
+        allow_small_eval: Força a execução msm se não atingir min_rows.
+        
+    Returns:
+        Dicionário Payload com as métricas recomputadas para fácil log e armazenamento posterior.
     """
     preds_csv_p = _resolve_preds_csv(preds_csv, dataset_tag)
     outp = Path(out_dir)

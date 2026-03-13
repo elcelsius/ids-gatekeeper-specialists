@@ -25,6 +25,13 @@ from lime.lime_tabular import LimeTabularExplainer
 # -----------------------------
 
 def _ensure_columns(df, cols: List[str], fill: float = 0.0):
+    """
+    Garante que o DataFrame passado tenha todas as colunas exigidas. 
+    Se alguma coluna estiver faltando, ela é criada e preenchida com um valor padrão (zero).
+    
+    Prática Educativa: Isso é conhecido como "programação defensiva". Previne que 
+    o modelo quebre na inferência caso os dados novos de entrada não possuam alguma variável.
+    """
     import pandas as pd
     df = df.copy()
     for c in cols:
@@ -35,8 +42,13 @@ def _ensure_columns(df, cols: List[str], fill: float = 0.0):
 
 def _is_tree_model(model: Any) -> bool:
     """
-    True para modelos suportados nativamente pelo TreeExplainer (LightGBM,
-    XGBoost, CatBoost, árvores/ensembles do sklearn).
+    Verifica se o modelo fornecido é baseado em Árvores de Decisão (Decision Trees).
+    
+    Explicação: 
+    Modelos de árvore (como XGBoost, LightGBM, Random Forest) possuem algoritmos muito 
+    rápidos e específicos na biblioteca SHAP (o chamado TreeExplainer). Se for outro tipo de 
+    modelo (ex: Redes Neurais), precisamos usar métodos matemáticos mais genéricos e mais lentos.
+    Retorna True se for um modelo tipo árvore suportado.
     """
     name = model.__class__.__name__.lower()
     return any(k in name for k in [
@@ -51,13 +63,20 @@ def _is_tree_model(model: Any) -> bool:
 
 def _compute_shap_values(model, X):
     """
-    Retorna (shap_values_2d, feature_names)
-    Regras:
-      - XGBoost: usa SHAP com algorithm='permutation' sobre predict_proba
-        (evita bug do base_score e mudanças de formato do TreeExplainer).
-      - LightGBM / Árvores sklearn: TreeExplainer ('interventional').
-      - Genérico: permutation explainer.
-    Normaliza a saída para shape (n_amostras, n_features).
+    Calcula a contribuição de cada feature (característica) para a decisão do modelo usando SHAP.
+    
+    O que é SHAP para estudantes?
+    SHAP (Shapley Additive exPlanations) é uma técnica emprestada da Teoria dos Jogos cooperativos.
+    Ele distribui de forma matematicamente justa o "crédito" da predição final do modelo entre todas 
+    as variáveis de entrada. Cada feature ganha um peso (SHAP Value) de contribuição.
+    
+    Regras de cálculo aplicadas na função:
+      - Para XGBoost: Usa o método de permutação sobre as probabilidades devido a peculiaridades e bugs na lib.
+      - Para LightGBM ou modelos Sklearn: Usa o TreeExplainer (método extremamente rápido voltado para árvores).
+      - Para outros modelos: Usa o explicador de permutação que é genérico.
+      
+    Retorna:
+    Uma matriz normalizada contendo os SHAP values de cada amostra (shap_values_2d) e a lista das variáveis.
     """
     import shap as _shap
     import numpy as _np
@@ -161,9 +180,16 @@ def _save_summary_outputs(
     plot_png: bool = True,
 ) -> Path:
     """
-    Salva:
-      - summary_mean_abs_shap.csv (importância global |SHAP| média)
-      - summary_bar.png (barplot SHAP) [opcional]
+    Calcula e salva o resumo da importância /GLOBAL/ de cada feature para o modelo.
+    
+    Explicação para alunos:
+    Aqui estamos tirando a média do valor absoluto (|SHAP|) de cada variável considerando TODAS 
+    as amostras fornecidas. Quanto maior for o valor dessa média, mais impacto essa variável tem 
+    nas decisões gerais do modelo inteiro.
+    
+    Artefatos gerados:
+      - summary_mean_abs_shap.csv: Uma tabela contendo o ranking de features.
+      - summary_bar.png: Um gráfico de barras fácil para colocar no TCC ou na apresentação.
     """
     ensure_dir(out_dir)
     import pandas as pd
@@ -205,8 +231,14 @@ def _save_per_sample_topk(
     top_k: int = 10,
 ) -> None:
     """
-    Para cada amostra, salva um CSV com as top-k contribuições absolutas.
-    Arquivo: sample_{idx:05d}_topk.csv
+    Salva uma explicação individual (uso /LOCAL/) detalhada para CADA amostra que passou pelo modelo.
+    
+    Explicação:
+    Diferente do resumo global que responde "qual variável é mais importante no geral?", aqui vemos 
+    "por que o modelo tomou a decisão para esta amostra ESPECÍFICA". 
+    Nós gravamos um CSV isolado apenas para as top-k features mais importantes em cada instância.
+    
+    Arquivo gerado: sample_{idx:05d}_topk.csv
     """
     ensure_dir(out_dir)
     import pandas as pd
@@ -232,6 +264,10 @@ def explain_with_shap(
     top_k_global: int = 10,
     top_k_local: int = 10,
 ) -> None:
+    """
+    Função orquestradora que une o cálculo dos valores SHAP com o salvamento dos arquivos 
+    de resumo (visão macro / global) e das explicações individuais (visão micro / local).
+    """
     shap_vals, feats = _compute_shap_values(model, X)
     _save_summary_outputs(out_dir, shap_vals, feats, top_k=top_k_global, plot_png=True)
     _save_per_sample_topk(out_dir, X, shap_vals, feats, top_k=top_k_local)
@@ -250,8 +286,16 @@ def explain_with_lime(
     max_samples: int = 20,
 ) -> None:
     """
-    Fallback quando SHAP (TreeExplainer/permutation) não se aplica.
-    Gera explicações LIME por amostra (limitando max_samples).
+    Função de fallback (plano B) utilizando LIME para explicar o modelo.
+    
+    Explicação: O que é LIME e por que usar como fallback?
+    LIME (Local Interpretable Model-agnostic Explanations) tenta explicar a predição localmente 
+    treinando um modelo linear simples (como uma regressão) apenas na região (vizinhança) 
+    ao redor da amostra específica sendo observada. 
+    Nós usamos ele aqui quando o SHAP não se aplica nativamente ou se torna muito custoso.
+    
+    Obs: O LIME é bem mais amarrado aos dados locais, logo limitamos o max_samples (ex: só as top 20 predições)
+    porque processá-lo para a base inteira levaria um tempo impraticável comparado às árvores no SHAP.
     """
     ensure_dir(out_dir)
     import numpy as _np
@@ -303,8 +347,19 @@ def run_xai_for_specialist(
     top_k_local: int = 10,
 ) -> Dict[str, Any]:
     """
-    Carrega o especialista da classe (pela chave do mapa), prepara X com as features dedicadas,
-    executa SHAP (se suportado), senão LIME, e salva artefatos em output_dir/class_{key}.
+    Orquestra todo o processo de Interpretabilidade Explicável (XAI) para um Especialista.
+    
+    Passo a passo (didático):
+    1. Lê o mapa de modelos (`specialist_map_json`), encontrando o caminho `.pkl` do especialista desta classe.
+    2. Descobre exatamente quais features (colunas de dados) este especialista específico utiliza.
+    3. Lê os dados no `input_csv` e garante que as colunas corretas estão visíveis.
+    4. Analisa a natureza do modelo carregado:
+        - Se for uma Árvore (onde executamos SHAP rápido): Faz a extração de SHAP.
+        - Senão: Aciona o fallback (LIME).
+    5. Salva um `meta.json` com os metadados dessa extração de conhecimento.
+    
+    Esse método encapsula e documenta por completo a forma como um determinado 
+    modelo tomou ou suportou uma decisão.
     """
     import json
 
