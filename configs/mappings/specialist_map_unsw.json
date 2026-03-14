@@ -1,0 +1,80 @@
+{
+  "target_col": "label",
+  "classes": [
+    "Attack",
+    "Normal"
+  ],
+  "class_encoding": {
+    "0": "Attack",
+    "1": "Normal"
+  },
+  "models_used": [
+    "lgbm",
+    "xgb",
+    "cat",
+    "sk_hgb",
+    "sk_rf"
+  ],
+  "specialists": {
+    "Attack": {
+      "model_key": "xgb",
+      "feature_set_name": "PSO_5",
+      "k": 20,
+      "f1_k": 0.9678732533832105,
+      "latency_ms": 0.0005340499180185334,
+      "features": [
+        "sttl",
+        "sloss",
+        "dloss",
+        "ct_dst_src_ltm",
+        "ct_srv_dst",
+        "ct_srv_src",
+        "ct_src_ltm",
+        "ct_dst_ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+        "dur",
+        "ct_state_ttl",
+        "ct_flw_http_mthd",
+        "trans_depth",
+        "tcprtt",
+        "is_sm_ips_ports",
+        "ct_ftp_cmd",
+        "is_ftp_login",
+        "synack",
+        "ackdat"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_unsw\\Attack\\model.joblib"
+    },
+    "Normal": {
+      "model_key": "xgb",
+      "feature_set_name": "PSO_5",
+      "k": 20,
+      "f1_k": 0.9604228788289509,
+      "latency_ms": 0.0006064674804092688,
+      "features": [
+        "sttl",
+        "sloss",
+        "dloss",
+        "ct_dst_src_ltm",
+        "ct_srv_dst",
+        "ct_srv_src",
+        "ct_src_ltm",
+        "ct_dst_ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+        "dur",
+        "ct_state_ttl",
+        "ct_flw_http_mthd",
+        "trans_depth",
+        "tcprtt",
+        "is_sm_ips_ports",
+        "ct_ftp_cmd",
+        "is_ftp_login",
+        "synack",
+        "ackdat"
+      ],
+      "model_path": "artifacts\\trained_models\\specialists_unsw\\Normal\\model.joblib"
+    }
+  }
+}

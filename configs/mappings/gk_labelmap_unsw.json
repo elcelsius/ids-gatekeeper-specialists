@@ -1,12 +1,12 @@
 {
-  "Benign": "0",
-  "benign": "0",
-  "Normal": "0",
-  "normal": "0",
-  "0": "0",
-  "1": "1",
-  "Attack": "1",
-  "attack": "1",
-  "Malicious": "1",
-  "malicious": "1"
+  "Attack": "Attack",
+  "attack": "Attack",
+  "Malicious": "Attack",
+  "malicious": "Attack",
+  "1": "Attack",
+  "Normal": "Normal",
+  "normal": "Normal",
+  "Benign": "Normal",
+  "benign": "Normal",
+  "0": "Normal"
 }

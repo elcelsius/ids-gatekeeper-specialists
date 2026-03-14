@@ -1,12 +1,12 @@
 {
-  "f1_macro": 0.89006922185169,
-  "accuracy": 0.8984321978316537,
+  "f1_macro": 0.8655823711369468,
+  "accuracy": 0.8742678552078521,
   "n": 175341,
   "labels": [
-    "0",
-    "1"
+    "Benign",
+    "Others"
   ],
-  "preds_csv": "outputs/unsw_bin/preds.csv",
+  "preds_csv": "outputs/eval_unsw/preds.csv",
   "out_dir": "reports/unsw_bin",
   "dataset_tag": "unsw_bin"
 }
