@@ -49,15 +49,20 @@ def map_label(raw: str) -> str:
     if raw is None:
         return "Others"
     s = str(raw).strip().lower()
+
+    # Filtra linhas de cabeçalho duplicadas no CSV
+    if s == "label":
+        return "Others"
+
     if "benign" in s or s in {"normal"}:
         return "Benign"
     if "ddos" in s:
         return "DDoS"
     if "dos" in s:
         return "DoS"
-    if "web" in s or "sql" in s or "xss" in s or ("brute force" in s and "web" in s):
+    if "sql" in s or "xss" in s or ("brute force" in s and "web" in s):
         return "Web"
-    if "patator" in s or ("brute force" in s and "web" not in s):
+    if "patator" in s or "bruteforce" in s or ("brute force" in s and "web" not in s):
         return "BruteForce"
     if "bot" in s:
         return "Bot"
@@ -150,14 +155,19 @@ def build_eval() -> None:
 
     # Sanitização
     df = df.replace([np.inf, -np.inf], np.nan)
-    df = df.dropna(axis=1, how="any")
-    df["label"] = df["label"].astype(str)
+    labels = df["label"]
+    df = df.drop(columns=["label"]).dropna(axis=1, how="any")
+    df["label"] = labels.values
 
     # Cap final com amostragem estratificada
     if len(df) > N_CAP:
-        df = df.groupby("label", group_keys=False).apply(
-            lambda g: g.sample(frac=N_CAP / len(df), random_state=EVAL_SEED)
-        ).reset_index(drop=True)
+        df, _ = train_test_split(
+            df,
+            train_size=N_CAP,
+            random_state=EVAL_SEED,
+            stratify=df["label"],
+        )
+        df = df.reset_index(drop=True)
 
     df.to_csv(OUT_EVAL, index=False)
     print(f"[OK] Holdout de avaliação salvo em: {OUT_EVAL}  (n={len(df):,})")

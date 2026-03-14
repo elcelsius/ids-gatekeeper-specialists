@@ -1,298 +1,334 @@
 # 2D-AEF — Fluxo de Desenvolvimento, Treinamento e Avaliação
-Versão: v0.1.0
+Versão: v0.2.0
 
 Este documento descreve, ponta-a-ponta, as **etapas do projeto** — desde a
-preparação dos dados até a publicação de resultados (métricas, XAI e relatórios).  
-Tudo aqui está alinhado com os _CLIs_ já presentes no repositório (UNSW e CIC).
+preparação dos dados até a publicação de resultados (métricas, XAI e relatórios).
+Todos os comandos são relativos à raiz do repositório.
 
 ---
 
 ## Visão Geral das Etapas
 
-1) **Preparar dados**
-   - Baixar/organizar datasets em `data/` (fora do Git por padrão).
-   - Gerar splits de **train** / **infer** / **eval** conforme o caso.
+1. **Baixar datasets** — scripts dedicados por dataset em `scripts/`
+2. **Preparar dados** — splits de treino / holdout / infer sem leakage
+3. **Feature Pool** — geração de conjuntos candidatos de atributos para especialistas
+4. **Treinar Gatekeeper** — classificador de triagem rápida
+5. **Treinar Especialistas** — busca do melhor par (modelo + features) por classe
+6. **Inferência two-stage** — gatekeeper → especialista → `preds.csv`
+7. **Avaliação** — métricas, matriz de confusão, F1 por classe
+8. **Plots** — figuras para o paper
+9. **XAI** — interpretabilidade por especialista (SHAP/LIME)
+10. **Relatórios** — consolidação em `reports/`
 
-2) **Feature Pool (meta-busca de atributos)**
-   - Gera `artifacts/feature_pool_*.json` a partir do CSV base (ex.: UNSW, CIC).
-   - Cada *feature set* é um candidato para os especialistas.
-
-3) **Treinar Gatekeeper**
-   - Modelo **rápido** que roteia as amostras para o especialista apropriado.
-   - Salva `artifacts/gatekeeper_*.joblib` e um arquivo `.txt` com as colunas usadas.
-
-4) **Treinar Especialistas por Classe**
-   - Busca o melhor par **(modelo + feature set)** por classe, maximizando `F1_k` e
-     desempate por latência.
-   - Salva `artifacts/specialists_*/*/model.joblib` e o mapa `artifacts/specialist_map_*.json`.
-
-5) **Inferência em 2 estágios**
-   - Usa Gatekeeper → Especialista para gerar `preds.csv` em `outputs/<exp>/`.
-
-6) **Avaliação**
-   - Recalcula métricas (F1-macro, acc) e gera artefatos de avaliação em `outputs/<exp>/`.
-
-7) **Plots**
-   - **plot-eval**: matriz de confusão e F1 por classe (PNG).
-
-8) **XAI**
-   - **explain-specialist** (SHAP/LIME) por classe → `outputs/xai_<exp>/class_*`.
-   - **aggregate-xai** → consolidados CSV/MD.
-
-9) **Relatórios**
-   - Relatórios Markdown prontos para anexar ao artigo: `reports/<dataset>/RELATORIO_*.md`.
+> Pastas `data/`, `artifacts/` e `outputs/` **não são versionadas**.
+> Cada uma contém um `README.md` com instruções de reprodução.
 
 ---
 
-## 1) Preparação de Dados
+## 1) Download dos Datasets
 
-### UNSW-NB15 (exemplo)
-- Arquivo base: `data/raw/unsw/UNSW_NB15_training-set.csv` (train) e variações para infer/eval.
-- (Opcional) Gerar listas de colunas para Gatekeeper a partir de CSV:
+### CIC-IDS2018
+
 ```powershell
-python scripts/make_gatekeeper_cols_from_csv.py `
-  --csv data\raw\unsw\UNSW_NB15_training-set.csv `
-  --target_col label `
-  --out gatekeeper_unsw_cols.txt
+python scripts\download_cicids2018.py
 ```
 
-### CIC-IDS2018 (exemplo)
-- Download via Kaggle (já guiado em `scripts/download_cicids2018.py`) **ou** manual.
-- Preparar *train* e *infer*/*eval* com os scripts utilitários:
+Salva CSVs brutos em `data\raw\cicids2018\`.
+Requer credencial Kaggle em `%USERPROFILE%\.kaggle\kaggle.json`.
+
+### UNSW-NB15
+
 ```powershell
+python scripts\download_unsw.py
+```
+
+Salva CSVs em `data\raw\unsw\`.
+Dataset Kaggle: `mrwellsdavid/unsw-nb15`.
+Inclui os arquivos oficiais `UNSW_NB15_training-set.csv` e `UNSW_NB15_testing-set.csv`.
+
+---
+
+## 2) Preparação de Dados
+
+> **Importante — anti-leakage:** treino e holdout de avaliação são gerados
+> a partir dos **dados brutos**, nunca um a partir do outro.
+> Seeds documentadas: treino `TRAIN_SEED=42`, holdout `EVAL_SEED=123`.
+
+### CIC-IDS2018 (cenário principal)
+
+```powershell
+# Passo 1 — gera treino + amostra de inferência
 python scripts\prep_cic_train.py
+
+# Passo 2 — gera holdout de avaliação (lê brutos, NÃO lê train_cic.csv)
 python scripts\make_cic_eval.py
 ```
-Isso produz:
-- `data/train_cic.csv` (amostra para treino)
-- `data/cic_infer.csv` (amostra para inferência rápida)
-- `data/cic_eval.csv` (amostra rotulada para avaliação)
 
-> Observação: pastas `data/`, `artifacts/` e `outputs/` estão ignoradas no Git por padrão;
-> cada uma contém um `README.md` com instruções locais.
+Artefatos gerados:
+
+| Arquivo | Linhas aprox. | Uso |
+|---|---|---|
+| `data\train_cic.csv` | 300 000 | treino do gatekeeper e especialistas |
+| `data\cic_eval.csv` | 100 000 | holdout de avaliação (sem sobreposição) |
+| `data\cic_infer.csv` | 1 000 | inferência rápida / smoke test |
+
+Recorte robusto (remove `dst_port`, usado no baseline XGBoost):
+
+```powershell
+python scripts\prep_cic_robust.py
+```
+
+Gera `data\train_cic_robust.csv` e `data\cic_eval_robust.csv`.
+
+### UNSW-NB15 (cenário secundário)
+
+```powershell
+python scripts\prep_unsw_binary.py
+```
+
+O script detecta automaticamente o modo de operação:
+
+- **Modo preferencial** — usa `UNSW_NB15_training-set.csv` como treino e
+  `UNSW_NB15_testing-set.csv` como holdout (split oficial do dataset).
+- **Fallback** — se os arquivos oficiais não estiverem presentes, concatena
+  os brutos `UNSW-NB15_1.csv` a `UNSW-NB15_4.csv` e aplica split 80/20
+  estratificado.
+
+Artefatos gerados:
+
+| Arquivo | Linhas aprox. | Uso |
+|---|---|---|
+| `data\train_unsw.csv` | ~175 000 | treino do gatekeeper e especialistas |
+| `data\unsw_eval.csv` | ~82 000 | holdout de avaliação (sem sobreposição) |
+| `data\unsw_infer.csv` | 1 000 | inferência rápida / smoke test |
+
+Rótulos: `Normal` / `Attack`.
 
 ---
 
-## 2) Gerar Feature Pool
+## 3) Gerar Feature Pool
 
-Exemplo (UNSW):
 ```powershell
-python -m twodaef.cli_make_feature_pool `
-  --csv data\raw\unsw\UNSW_NB15_training-set.csv `
-  --target_col label `
-  --max_features_per_set 20 `
-  --total_sets 30 `
-  --seed 42 `
-  --out_json artifacts\feature_pool_unsw.json
-```
-
-Exemplo (CIC):
-```powershell
+# CIC
 python -m twodaef.cli_make_feature_pool `
   --csv data\train_cic.csv `
   --target_col label `
   --max_features_per_set 20 `
   --total_sets 30 `
   --seed 42 `
-  --out_json artifacts\feature_pool_cic.json
+  --out_json artifacts\feature_pools\feature_pool_cic.json
+
+# UNSW
+python -m twodaef.cli_make_feature_pool `
+  --csv data\train_unsw.csv `
+  --target_col label `
+  --max_features_per_set 20 `
+  --total_sets 30 `
+  --seed 42 `
+  --out_json artifacts\feature_pools\feature_pool_unsw.json
 ```
 
 ---
 
-## 3) Treinar Gatekeeper
+## 4) Treinar Gatekeeper
 
-Exemplo (UNSW):
 ```powershell
-gatekeeper-train `
-  --train_csv data\raw\unsw\UNSW_NB15_training-set.csv `
-  --target_col label `
-  --features cols.txt `
-  --model_out artifacts\gatekeeper.joblib
-```
-
-Exemplo (CIC):
-```powershell
-gatekeeper-train `
+# CIC
+python -m twodaef.cli_train_gatekeeper `
   --train_csv data\train_cic.csv `
   --target_col label `
-  --features gatekeeper_cic_cols.txt `
-  --model_out artifacts\gatekeeper_cic.joblib
+  --features configs\cols\gatekeeper_cic_cols.txt `
+  --model_out artifacts\trained_models\gatekeeper_cic.joblib
+
+# UNSW
+python -m twodaef.cli_train_gatekeeper `
+  --train_csv data\train_unsw.csv `
+  --target_col label `
+  --features configs\cols\gatekeeper_unsw_cols.txt `
+  --model_out artifacts\trained_models\gatekeeper_unsw.joblib
+```
+
+Para gerar os arquivos `.txt` de colunas automaticamente:
+
+```powershell
+python scripts\make_gatekeeper_cols_from_csv.py `
+  --csv data\train_cic.csv `
+  --out configs\cols\gatekeeper_cic_cols.txt `
+  --max_cols 12
 ```
 
 ---
 
-## 4) Treinar Especialistas por Classe
+## 5) Treinar Especialistas
 
-Exemplo (UNSW — com busca automática de modelos disponíveis):
 ```powershell
-train-specialists `
-  --train_csv data\raw\unsw\UNSW_NB15_training-set.csv `
+# CIC
+python -m twodaef.cli_train_specialists `
+  --train_csv data\train_cic.csv `
   --target_col label `
-  --feature_pool_json artifacts\feature_pool_unsw.json `
-  --out_dir artifacts\specialists `
-  --map_path artifacts\specialist_map.json `
+  --feature_pool_json artifacts\feature_pools\feature_pool_cic.json `
+  --out_dir artifacts\trained_models\specialists_cic `
+  --map_path configs\mappings\specialist_map_cic.json `
+  --test_size 0.2 `
+  --seed 42 `
+  --models auto
+
+# UNSW
+python -m twodaef.cli_train_specialists `
+  --train_csv data\train_unsw.csv `
+  --target_col label `
+  --feature_pool_json artifacts\feature_pools\feature_pool_unsw.json `
+  --out_dir artifacts\trained_models\specialists_unsw `
+  --map_path configs\mappings\specialist_map_unsw.json `
   --test_size 0.2 `
   --seed 42 `
   --models auto
 ```
 
-Exemplo (CIC — salvando em pastas separadas):
-```powershell
-train-specialists `
-  --train_csv data\train_cic.csv `
-  --target_col label `
-  --feature_pool_json artifacts\feature_pool_cic.json `
-  --out_dir artifacts\specialists_cic `
-  --map_path artifacts\specialist_map_cic.json `
-  --test_size 0.2 `
-  --seed 42 `
-  --models auto
-```
-
 ---
 
-## 5) Inferência em 2 Estágios
+## 6) Inferência Two-Stage
 
-Exemplo (UNSW — *quick check*):
 ```powershell
-infer-twostage `
-  --gatekeeper_model artifacts\gatekeeper.joblib `
-  --gatekeeper_features cols.txt `
-  --specialist_map artifacts\specialist_map.json `
-  --input_csv data\unsw_infer.csv `
-  --output_csv outputs\preds_twostage_unsw.csv `
-  --fill_missing 0.0
-```
-
-Exemplo (CIC — para avaliação):
-```powershell
-infer-twostage `
-  --gatekeeper_model artifacts\gatekeeper_cic.joblib `
-  --gatekeeper_features gatekeeper_cic_cols.txt `
-  --specialist_map artifacts\specialist_map_cic.json `
+# CIC
+python -m twodaef.cli_infer_twostage `
+  --gatekeeper_model artifacts\trained_models\gatekeeper_cic.joblib `
+  --gatekeeper_features configs\cols\gatekeeper_cic_cols.txt `
+  --specialist_map configs\mappings\specialist_map_cic.json `
   --input_csv data\cic_eval.csv `
   --output_csv outputs\eval_cic\preds.csv `
   --fill_missing 0.0
+
+# UNSW
+python -m twodaef.cli_infer_twostage `
+  --gatekeeper_model artifacts\trained_models\gatekeeper_unsw.joblib `
+  --gatekeeper_features configs\cols\gatekeeper_unsw_cols.txt `
+  --specialist_map configs\mappings\specialist_map_unsw.json `
+  --input_csv data\unsw_eval.csv `
+  --output_csv outputs\eval_unsw\preds.csv `
+  --fill_missing 0.0
 ```
 
 ---
 
-## 6) Avaliação Oficial (gera métricas + guarda artefatos)
+## 7) Avaliação
 
 ```powershell
-eval-twostage `
-  --gatekeeper_model artifacts\gatekeeper_cic.joblib `
-  --gatekeeper_features gatekeeper_cic_cols.txt `
-  --specialist_map artifacts\specialist_map_cic.json `
+# CIC
+python -m twodaef.cli_eval_twostage `
+  --gatekeeper_model artifacts\trained_models\gatekeeper_cic.joblib `
+  --gatekeeper_features configs\cols\gatekeeper_cic_cols.txt `
+  --specialist_map configs\mappings\specialist_map_cic.json `
   --input_csv data\cic_eval.csv `
   --label_col label `
-  --output_dir outputs\eval_cic
+  --output_dir outputs\eval_cic `
+  --fill_missing 0.0
+
+# UNSW
+python -m twodaef.cli_eval_twostage `
+  --gatekeeper_model artifacts\trained_models\gatekeeper_unsw.joblib `
+  --gatekeeper_features configs\cols\gatekeeper_unsw_cols.txt `
+  --specialist_map configs\mappings\specialist_map_unsw.json `
+  --input_csv data\unsw_eval.csv `
+  --label_col label `
+  --output_dir outputs\eval_unsw `
+  --fill_missing 0.0
 ```
 
-Saída típica:
-- `F1-macro`, `accuracy`, `n`
-- `outputs/<exp>/preds.csv` (cópia de segurança ou gerado no passo anterior)
-- `outputs/<exp>/metrics.json` (dependendo da versão do script)
+Artefatos gerados em `outputs/<exp>/`:
+- `preds.csv`
+- `metrics_eval.json`
+- `confusion_matrix_eval.csv`
+- `classification_report_eval.csv`
 
 ---
 
-## 7) Plots (Matriz de Confusão, F1 por classe)
+## 8) Plots
 
 ```powershell
-plot-eval `
+# CIC
+python -m twodaef.cli_plot_eval `
   --preds_csv outputs\eval_cic\preds.csv `
   --label_col label `
-  --out_dir outputs\eval_cic
+  --out_dir reports\cic `
+  --dataset_tag cic
+
+# UNSW
+python -m twodaef.cli_plot_eval `
+  --preds_csv outputs\eval_unsw\preds.csv `
+  --label_col label `
+  --out_dir reports\unsw_bin `
+  --dataset_tag unsw_bin
 ```
 
-Saídas:
-- `outputs/<exp>/confusion_matrix.png`
-- `outputs/<exp>/f1_per_class.png`
-- `outputs/<exp>/metrics_again.json`
-
-> O `plot-eval` possui uma heurística de **alinhamento automático** entre
-> espaços de rótulos numéricos/textuais (ex.: `0/1` ↔ `Benign/Others`)
-> para evitar incompatibilidades.
+Artefatos gerados em `reports/<dataset>/`:
+- `confusion_matrix_<tag>.png`
+- `f1_per_class_<tag>.png`
+- `metrics_again.json`
 
 ---
 
-## 8) XAI (Por Especialista) e Consolidação
+## 9) XAI
 
-### XAI por classe
 ```powershell
-# Ex.: CIC — classe 'Benign'
-explain-specialist `
-  --specialist_map artifacts\specialist_map_cic.json `
+# Por classe (exemplo CIC — repetir para cada classe)
+python -m twodaef.cli_explain_specialist `
+  --specialist_map configs\mappings\specialist_map_cic.json `
   --class_key Benign `
   --input_csv data\cic_eval.csv `
   --output_dir outputs\xai_cic `
   --limit_samples 200 `
   --top_k_global 12 `
   --top_k_local 12
-```
 
-```powershell
-# Ex.: CIC — classe 'Others'
-explain-specialist `
-  --specialist_map artifacts\specialist_map_cic.json `
-  --class_key Others `
-  --input_csv data\cic_eval.csv `
-  --output_dir outputs\xai_cic `
-  --limit_samples 200 `
-  --top_k_global 12 `
-  --top_k_local 12
-```
-
-### Consolidação XAI
-```powershell
-aggregate-xai `
+# Consolidação
+python -m twodaef.cli_xai_aggregate `
   --xai_root outputs\xai_cic `
-  --out_dir outputs\xai_cic\_consolidado
+  --out_dir reports\cic\xai
 ```
-Saídas:
-- `xai_shap_consolidado.csv`
-- `xai_shap_consolidado.md`
+
+Artefatos: `xai_shap_consolidado.csv`, `xai_shap_consolidado.md`.
 
 ---
 
-## 9) Relatórios
+## 10) Baseline XGBoost
 
-- **UNSW (binário)**: `reports/unsw_bin/RELATORIO_UNSW.md`
-- **CIC**:  `reports/cic/RELATORIO_CIC.md`
+```powershell
+python scripts\baseline_xgb_cic_robust.py
+```
 
-> Dica: gere os gráficos (passo 7) e consolide XAI (passo 8) **antes** de exportar os relatórios — assim você inclui as figuras/links corretos.
-
----
-
-## Boas Práticas de Organização
-
-- **Experimentos por pasta** em `outputs/` (ex.: `outputs/eval_unsw`, `outputs/eval_cic`).
-- **Artefatos por dataset** em `artifacts/` com nomes claros (ex.: `specialist_map_unsw.json`, `gatekeeper_cic.joblib`).
-- **Controle de versão**: evite versionar dados/binários. `README.md` locais (placeholders) explicam como reproduzir.
-- **Issues & Milestones** (GitHub): crie _issues_ por dataset/feature nova e agrupe milestones por release (`v0.2.0`, etc.).
+Saídas em `outputs\cic_robust_xgb_baseline\`:
+- `metrics_cic_robust_xgb_baseline.csv`
+- `confusion_matrix_cic_robust_xgb_baseline.csv`
 
 ---
 
-## Como Estender para um Novo Dataset
+## Troubleshooting
 
-1. Adapte/crie um script `scripts/prep_<novo>.py` para gerar `train_<novo>.csv`, `infer_<novo>.csv`, `eval_<novo>.csv`.
-2. Gere `feature_pool_<novo>.json` (passo 2).
-3. Treine Gatekeeper (passo 3) e Especialistas (passo 4).
-4. Rode inferência/avaliação/plots/XAI (passos 5–8).
-5. Documente em `reports/<novo>/RELATORIO_<NOVO>.md` e atualize `docs/ARCHITECTURE.md` se necessário.
+| Problema | Solução |
+|---|---|
+| Rótulos divergentes (`0/1` vs `Normal/Attack`) | `plot-eval` alinha automaticamente; ou normalize antes com `map_label_unsw()` |
+| SHAP + XGBoost: erro de `base_score` | Use `algorithm="permutation"` no Explainer |
+| Latência aparece como `0.000` | Normal para amostras pequenas — use totais por batch |
+| `make_cic_eval.py` gera dados iguais ao treino | **Erro de versão antiga** — certifique-se de usar a versão ≥ v0.2.0 que lê os brutos |
 
 ---
 
-## Troubleshooting Rápido
+## Como Adicionar um Novo Dataset
 
-- **Tipos de rótulo divergentes** (ex.: `0/1` vs `Benign/Others`): use o `plot-eval` (já alinha automaticamente) **ou** normalize rótulos antes.
-- **SHAP com XGBoost**: usamos `Explainer(..., algorithm="permutation")` quando necessário, evitando problemas de *base_score*.
-- **Latência 0.000** no Gatekeeper: os _benchmarks_ fazem repetições; valores muito pequenos podem aparecer quase zero — use o total por linha para decisões de desempenho.
+1. Criar `scripts/download_<novo>.py` para aquisição dos dados brutos
+2. Criar `scripts/prep_<novo>_binary.py` com split treino/holdout sem leakage
+3. Gerar feature pool, gatekeeper cols e specialist map nos caminhos de `configs/`
+4. Seguir etapas 3–10 acima
+5. Documentar em `reports/<novo>/RELATORIO_<NOVO>.md`
 
 ---
 
 ## Referências Internas
-- `docs/ARCHITECTURE.md` (diagrama e visão macro)
-- `README.md` (setup rápido)
-- `CONTRIBUTING.md` (regras de branches/commits)
-- `CHANGELOG.md` (histórico de versões)
+
+- `docs/ARCHITECTURE.md` — diagrama e visão macro da arquitetura
+- `README.md` — setup rápido e pré-requisitos
+- `data/README.md` — estrutura e política de versionamento dos dados
+- `scripts/README.md` — índice e descrição de todos os scripts
+- `artigo/checklist_execucao_experimental.md` — checklist da campanha do paper
+- `artigo/plano_mestre_execucao_experimental.md` — plano mestre experimental

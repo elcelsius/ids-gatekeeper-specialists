@@ -1,0 +1,9 @@
+{
+  "autoAcceptEdits": true,
+  "permissions": {
+    "allow": [
+      "Bash(ls -lh \"d:/Workspace/ids-gatekeeper-specialists/data/\"*.csv)",
+      "Bash(python -c \":*)"
+    ]
+  }
+}
