@@ -54,6 +54,22 @@ EVAL_SEED   = 123       # mesmo seed do make_cic_eval.py
 EVAL_FRAC   = 0.20      # 20 % para holdout (só usado no fallback)
 INFER_ROWS  = 1_000     # linhas na amostra de inferência rápida
 
+# Metadados/identificadores que não devem entrar como features.
+# Inclui variações de nomes vistas em versões diferentes do UNSW-NB15.
+METADATA_COLS_TO_DROP = {
+    "id",
+    "srcip",
+    "dstip",
+    "sport",
+    "dsport",
+    "src_ip",
+    "dst_ip",
+    "src_port",
+    "dst_port",
+    "attack_cat",
+    "attack_category",
+}
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 def snake(s: str) -> str:
@@ -94,6 +110,11 @@ def sanitize(df: pd.DataFrame, label_col: str) -> Optional[pd.DataFrame]:
 
     if "label" not in df.columns:
         return None
+
+    # Remove metadados/identificadores que não são features.
+    cols_to_drop = [c for c in METADATA_COLS_TO_DROP if c in df.columns and c != "label"]
+    if cols_to_drop:
+        df = df.drop(columns=cols_to_drop)
 
     df["label"] = df["label"].apply(map_label_unsw)
 

@@ -94,12 +94,16 @@ O script detecta automaticamente o modo de operação:
   os brutos `UNSW-NB15_1.csv` a `UNSW-NB15_4.csv` e aplica split 80/20
   estratificado.
 
+No modo binário, o prep remove explicitamente colunas de metadados/
+identificação (ex.: `id`, IPs e portas quando presentes), mantendo apenas
+features de tráfego + `label`.
+
 Artefatos gerados:
 
 | Arquivo | Linhas aprox. | Uso |
 |---|---|---|
-| `data\train_unsw.csv` | ~175 000 | treino do gatekeeper e especialistas |
-| `data\unsw_eval.csv` | ~82 000 | holdout de avaliação (sem sobreposição) |
+| `data\train_unsw.csv` | ~82 000 | treino do gatekeeper e especialistas |
+| `data\unsw_eval.csv` | ~175 000 | holdout de avaliação (sem sobreposição) |
 | `data\unsw_infer.csv` | 1 000 | inferência rápida / smoke test |
 
 Rótulos: `Normal` / `Attack`.

@@ -1,4 +1,4 @@
-﻿# Decomposição Hierárquica e Especialização de Modelos em Inteligência Artificial: um Estudo de Caso em Detecção de Intrusões
+# Decomposição Hierárquica e Especialização de Modelos em Inteligência Artificial: um Estudo de Caso em Detecção de Intrusões
 
 ## Resumo
 

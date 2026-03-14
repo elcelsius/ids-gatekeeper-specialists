@@ -19,8 +19,8 @@ data/
 ├── train_cic_robust.csv     # Treino CIC sem dst_port   (recorte robusto)
 ├── cic_eval_robust.csv      # Holdout CIC sem dst_port  (recorte robusto)
 │
-├── train_unsw.csv           # Treino UNSW binário       (~175 000 linhas)
-├── unsw_eval.csv            # Holdout UNSW binário      (~82 000 linhas)
+├── train_unsw.csv           # Treino UNSW binário       (~82 000 linhas)
+├── unsw_eval.csv            # Holdout UNSW binário      (~175 000 linhas)
 └── unsw_infer.csv           # Amostra UNSW sem rótulo   (~1 000 linhas)
 ```
 
@@ -51,6 +51,10 @@ python scripts\prep_cic_robust.py   # → variantes sem dst_port
 # UNSW — cenário secundário
 python scripts\prep_unsw_binary.py  # → train_unsw.csv, unsw_eval.csv, unsw_infer.csv
 ```
+
+No prep do UNSW, colunas de metadados/identificação (`id`, IPs e portas de
+identificação quando existirem) são descartadas explicitamente antes da seleção
+de features.
 
 ---
 

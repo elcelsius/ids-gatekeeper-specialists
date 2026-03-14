@@ -1,4 +1,3 @@
-id
 dur
 spkts
 dpkts
@@ -11,10 +10,3 @@ sload
 dload
 sloss
 dloss
-sinpkt
-dinpkt
-sjit
-djit
-swin
-stcpb
-dtcpb

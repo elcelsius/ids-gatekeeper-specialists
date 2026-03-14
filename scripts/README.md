@@ -21,7 +21,7 @@ saídas e status atual.
 | `prep_cic_train.py` | CIC-IDS2018 | `data/raw/cicids2018/*.csv` | `data/train_cic.csv`, `data/cic_infer.csv` | Treino principal; `TRAIN_SEED=42` |
 | `make_cic_eval.py` | CIC-IDS2018 | `data/raw/cicids2018/*.csv` | `data/cic_eval.csv` | Holdout sem leakage; `EVAL_SEED=123` — **rodar após `prep_cic_train.py`** |
 | `prep_cic_robust.py` | CIC-IDS2018 | `data/train_cic.csv`, `data/cic_eval.csv` | `data/train_cic_robust.csv`, `data/cic_eval_robust.csv` | Remove coluna `dst_port` |
-| `prep_unsw_binary.py` | UNSW-NB15 | `data/raw/unsw/*.csv` | `data/train_unsw.csv`, `data/unsw_eval.csv`, `data/unsw_infer.csv` | Modo preferencial usa split oficial; fallback 80/20 |
+| `prep_unsw_binary.py` | UNSW-NB15 | `data/raw/unsw/*.csv` | `data/train_unsw.csv`, `data/unsw_eval.csv`, `data/unsw_infer.csv` | Modo preferencial usa split oficial; fallback 80/20; remove metadados (`id`, IP/porta de identificação quando presentes) |
 | `prep_unsw_multiclass.py` | UNSW-NB15 | `data/raw/unsw/*.csv` | `data/UNSW_train_mc.csv`, `data/UNSW_test_mc.csv` | Multiclasse — fora do escopo principal do paper |
 
 ---
