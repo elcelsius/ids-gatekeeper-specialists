@@ -125,7 +125,7 @@ def run_eval_twostage(
     out.mkdir(parents=True, exist_ok=True)
 
     # Ordena esteticamente as labels
-    labels_sorted = sorted(sorted(np.unique(y_true).tolist() + np.unique(y_pred).tolist(), key=str))
+    labels_sorted = sorted(set(np.unique(y_true).tolist() + np.unique(y_pred).tolist()))
     
     # Matriz de Confusão: Permite ver exatamente quem errou e virou o quê (Ex: Confundiu Dos com DDoS)
     cm = confusion_matrix(y_true, y_pred, labels=labels_sorted)
