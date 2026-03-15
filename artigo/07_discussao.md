@@ -1,6 +1,6 @@
 # 07 Discussão
 
-Esta seção interpreta os resultados apresentados na Seção 6 à luz da hipótese central do artigo: a de que uma arquitetura hierárquica em dois estágios, com gatekeeper e especialistas, constitui uma estratégia de IA plausível e analiticamente útil para problemas complexos de classificação. A discussão é conduzida em torno de quatro eixos: adequação da decomposição hierárquica, comportamento por classe, trade-offs de custo e granularidade, e limitações do estudo.
+Esta seção interpreta os resultados apresentados na Seção 5 à luz da hipótese central do artigo: a de que uma arquitetura hierárquica em dois estágios, com gatekeeper e especialistas, constitui uma estratégia de IA plausível e analiticamente útil para problemas complexos de classificação. A discussão é conduzida em torno de quatro eixos: adequação da decomposição hierárquica, comportamento por classe, trade-offs de custo e granularidade, e limitações do estudo.
 
 ## 7.1 Adequação da decomposição hierárquica
 

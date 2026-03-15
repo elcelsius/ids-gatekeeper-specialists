@@ -20,7 +20,7 @@ Além desta introdução, o artigo está organizado da seguinte forma. A Seção
 
 ## 2 Trabalhos Relacionados
 
-## 2.1 Decomposição da decisão em IA: especialização de modelos e roteamento
+### 2.1 Decomposição da decisão em IA: especialização de modelos e roteamento
 
 A ideia de decompor um problema complexo de classificação entre múltiplos modelos especializados, coordenados por um mecanismo de roteamento, representa uma direção consolidada na literatura de Inteligência Artificial. O paradigma de *Mixture of Experts* (MoE), cujas raízes remontam ao início dos anos 1990, propõe que uma rede de roteamento (*gating network*) aprenda a distribuir as instâncias de entrada entre especialistas, cada um responsável por uma região do espaço do problema. Em revisão recente e abrangente, Cai et al. (2024) documentam a trajetória desse paradigma desde suas formulações clássicas até sua adoção em larga escala em modelos de linguagem de grande porte, mostrando que o princípio central permanece o mesmo: especialistas distintos ativados seletivamente por um mecanismo de roteamento produzem ganhos de eficiência e especialização que modelos monolíticos não conseguem replicar sem custo computacional proporcional.
 
@@ -28,7 +28,7 @@ Para o presente artigo, o interesse no paradigma MoE não está em suas aplicaç
 
 Do ponto de vista de ensemble learning, Ganaie et al. (2022) mostram que combinações de classificadores produzem ganhos consistentes especialmente quando os modelos componentes cometem erros em regiões distintas — o que os autores denominam diversidade funcional. A arquitetura em dois estágios explorada neste artigo torna essa diversidade explícita ao separar estruturalmente o problema de triagem (gatekeeper) do problema de discriminação refinada (especialistas), em vez de simplesmente combinar classificadores de forma indistinta.
 
-## 2.2 Classificação complexa e arquiteturas hierárquicas em IA aplicada
+### 2.2 Classificação complexa e arquiteturas hierárquicas em IA aplicada
 
 A literatura de Inteligência Artificial aplicada tem discutido, de forma recorrente, as limitações de modelos monolíticos em problemas de classificação que apresentam heterogeneidade interna, sobreposição entre classes, fronteiras de decisão difíceis e necessidade de tratamento diferenciado para subconjuntos do espaço de entrada. Nesse contexto, arquiteturas hierárquicas e estratégias de decomposição da decisão surgem como alternativas metodológicas relevantes, pois permitem organizar o processo inferencial em múltiplos estágios, com diferentes níveis de granularidade.
 
@@ -38,7 +38,7 @@ Além disso, propostas multicamadas recentes, como o sistema MIDES (Agate et al.
 
 O MIDES é, dentre os trabalhos analisados, o mais próximo arquiteturalmente da proposta investigada neste artigo. A diferença central está no mecanismo de seleção de especialistas: enquanto o MIDES emprega um Arbiter que raciocina dinamicamente sobre confiança e desempenho por rodada de inferência, o 2D-AEF seleciona especialistas em tempo de treino com base em F1 por classe e latência medida, privilegiando interpretabilidade e previsibilidade do fluxo de inferência.
 
-## 2.3 IDS com aprendizado de máquina como estudo de caso de classificação complexa
+### 2.3 IDS com aprendizado de máquina como estudo de caso de classificação complexa
 
 A detecção de intrusões baseada em aprendizado de máquina consolidou-se como uma área aplicada importante, em parte pela dificuldade de sistemas puramente baseados em assinatura acompanharem a diversidade e a evolução dos ataques. Ao mesmo tempo, a literatura recente mostra que o desempenho de IDS com ML não depende apenas da escolha do algoritmo, mas também da qualidade do desenho experimental, da seleção de datasets, do tratamento de desbalanceamento, da escolha de métricas e da clareza das comparações realizadas.
 
@@ -46,7 +46,7 @@ A revisão sistemática de Rehman et al. (2025) é particularmente útil nesse p
 
 Nesse sentido, alguns trabalhos herdados da linha do projeto 2D-AEF continuam conceitualmente relevantes. Propostas como *A Novel Ensemble Framework for an Intelligent Intrusion Detection System* e *LCCDE: A Decision-Based Ensemble Framework for Intrusion Detection in the Internet of Vehicles* ajudam a mostrar que a combinação de modelos, a decisão orientada por classe e o uso de múltiplos classificadores já constituem uma direção consolidada em IDS. O presente artigo, contudo, reposiciona essa discussão ao enfatizar menos a ideia de ensemble como simples mecanismo de aumento de desempenho e mais a noção de decomposição hierárquica da decisão como estratégia de IA (Seth et al., 2021; Yang et al., 2022).
 
-## 2.4 Especialização de modelos, roteamento e subproblemas de decisão
+### 2.4 Especialização de modelos, roteamento e subproblemas de decisão
 
 Um dos pontos centrais do presente artigo é a hipótese de que a especialização de classificadores pode ser útil quando o problema global contém subestruturas com padrões distintos. Essa ideia aparece, de formas variadas, em arquiteturas orientadas por classe, em mecanismos de roteamento entre modelos e em sistemas que combinam triagem inicial com análise especializada posterior. Ainda que os trabalhos da literatura nem sempre utilizem a mesma terminologia de gatekeeper e especialistas, muitos deles compartilham a intuição de que diferentes regiões do espaço de decisão podem se beneficiar de tratamentos específicos.
 
@@ -54,7 +54,7 @@ Do ponto de vista teórico em IA, o paradigma MoE revisitado por Cai et al. (202
 
 No contexto de IDS, o uso de ensembles orientados por classe e de estruturas multicamadas, como demonstrado pelo MIDES (Agate et al., 2025), reforça que essa lógica de especialização produz resultados competitivos quando combinada com mecanismos de seleção explícita de estratégia por amostra. Além disso, Ganaie et al. (2022) mostram empiricamente que a diversidade funcional entre classificadores — medida pela correlação entre seus erros — é o principal preditor de ganho em ensemble, reforçando que arquiteturas que estruturam explicitamente essa diversidade têm fundamento teórico mais sólido do que abordagens puramente votativas.
 
-## 2.5 XAI em sistemas de detecção de intrusões
+### 2.5 XAI em sistemas de detecção de intrusões
 
 À medida que sistemas IDS baseados em ML incorporam modelos de maior complexidade, a opacidade das decisões torna-se um problema prático. Analistas humanos precisam compreender, ao menos aproximadamente, por que determinado alerta foi gerado — seja para validar o modelo, priorizar respostas ou justificar decisões perante regulações como o GDPR.
 
@@ -68,7 +68,7 @@ Khan et al. (2025) ampliam essa discussão para o que denominam *adversarial XAI
 
 Para o presente artigo, a literatura de XAI cumpre um papel complementar. O objetivo não é deslocar o foco para explicabilidade, mas reconhecer que, em uma arquitetura hierárquica com múltiplas etapas de decisão, mecanismos interpretáveis podem contribuir para inspecionar a coerência do fluxo inferencial e apoiar a análise dos artefatos experimentais disponíveis. Interpretabilidade entra, portanto, como dimensão analítica adicional, e não como eixo central do artigo (Pawlicki et al., 2024; Al & Sagiroglu, 2025).
 
-## 2.6 Síntese crítica e posicionamento do artigo
+### 2.6 Síntese crítica e posicionamento do artigo
 
 A literatura recente converge para quatro constatações relevantes para o presente artigo.
 
@@ -84,31 +84,31 @@ A literatura recente converge para quatro constatações relevantes para o prese
 
 ## 3 Metodologia
 
-## 3.1 Visão geral da abordagem
+### 3.1 Visão geral da abordagem
 
 Este trabalho investiga uma estratégia de Inteligência Artificial voltada a problemas complexos de classificação, baseada na decomposição hierárquica da decisão em dois estágios complementares. A arquitetura analisada, implementada no ecossistema técnico do projeto `twodaef`, combina um classificador inicial de triagem, denominado *gatekeeper*, com classificadores especialistas responsáveis por decisões mais específicas em subespaços do problema. O domínio de detecção de intrusões é utilizado neste artigo como estudo de caso aplicado, e não como único centro conceitual da proposta.
 
 Do ponto de vista metodológico, a abordagem parte da hipótese de que, em cenários com heterogeneidade de padrões, sobreposição entre classes e diferentes graus de dificuldade local de decisão, uma arquitetura em múltiplas etapas pode constituir alternativa plausível à adoção de um único classificador global. O objetivo, portanto, não é pressupor superioridade universal da estratégia hierárquica, mas examinar se a decomposição do processo inferencial favorece uma organização mais estruturada da decisão, com potencial para análise mais rica de desempenho, erro, custo computacional e interpretabilidade.
 
-## 3.2 Arquitetura em dois estágios
+### 3.2 Arquitetura em dois estágios
 
 A arquitetura empregada segue a lógica **Gatekeeper → Especialistas**, conforme implementada em `src/twodaef/`. No primeiro estágio, uma decisão inicial de triagem é produzida a partir de um conjunto mais enxuto de atributos, com o propósito de identificar a região do problema ou o grupo funcional ao qual a amostra parece pertencer. No segundo estágio, a amostra é encaminhada para um especialista associado ao encaminhamento definido na etapa anterior, onde ocorre a decisão mais refinada.
 
 Em termos conceituais, o primeiro estágio atua como mecanismo de organização do espaço de decisão, enquanto o segundo concentra a discriminação mais específica. No cenário principal deste artigo, essa lógica é aplicada ao CIC-IDS2018 em formulação multiclasse de sete categorias; no cenário complementar, a mesma arquitetura é reutilizada no UNSW-NB15 em formulação binária (`Normal` vs. `Attack`). Em ambos os casos, a especialização permanece metodologicamente relevante porque separa a decisão de triagem da decisão refinada, permitindo observar onde o desempenho agregado se perde e em que estágio o custo computacional se concentra.
 
-## 3.3 Papel do gatekeeper
+### 3.3 Papel do gatekeeper
 
 O *gatekeeper* é implementado como um classificador de árvore de decisão podada (`DecisionTreeClassifier`), no módulo `src/twodaef/gatekeeper.py`, com hiperparâmetros configuráveis para profundidade máxima e tamanho mínimo de folha. Sua função metodológica central é realizar uma triagem inicial de baixa complexidade computacional, produzindo a decisão de roteamento que define qual especialista será acionado na etapa seguinte.
 
 As variáveis de entrada utilizadas pelo *gatekeeper* são mantidas em arquivos de configuração localizados em `configs/cols/`, o que separa explicitamente a seleção de atributos da lógica principal do código-fonte. Essa escolha favorece rastreabilidade, reprodutibilidade e flexibilidade experimental, ao permitir que diferentes recortes de atributos sejam avaliados sem necessidade de alteração estrutural da implementação.
 
-## 3.4 Papel dos especialistas
+### 3.4 Papel dos especialistas
 
 Os especialistas são treinados por meio do módulo `src/twodaef/specialists/train_specialists.py`. Para cada classe ou grupo alvo, o pipeline considera combinações entre famílias de modelos disponíveis no projeto e subconjuntos candidatos de atributos definidos em *feature pools*. A seleção do especialista é feita com base no desempenho da classe correspondente, adotando F1 como critério principal e latência de inferência como critério de desempate quando necessário.
 
 Esse desenho permite heterogeneidade entre especialistas, isto é, diferentes regiões do problema podem ser atendidas por modelos e representações de entrada distintas. Em vez de impor um único indutor para todo o espaço de dados, a metodologia procura adequar o mecanismo discriminativo às características particulares de cada subproblema. Essa é precisamente a dimensão de IA aplicada que interessa ao presente artigo: investigar se a especialização pode funcionar como estratégia de organização da inferência em cenários classificatórios complexos.
 
-## 3.5 Fluxo geral do pipeline
+### 3.5 Fluxo geral do pipeline
 
 O fluxo metodológico adotado no estudo pode ser resumido em cinco etapas principais:
 
@@ -120,7 +120,7 @@ O fluxo metodológico adotado no estudo pode ser resumido em cinco etapas princi
 
 Durante a inferência, o sistema também pode registrar informações auxiliares, como a predição do *gatekeeper*, o especialista acionado e estimativas de latência por estágio. Esses elementos não constituem, por si só, resultado experimental conclusivo, mas ampliam a rastreabilidade do processo inferencial e fornecem subsídios para análise posterior da arquitetura.
 
-## 3.6 Conjuntos de atributos, mapeamentos e artefatos
+### 3.6 Conjuntos de atributos, mapeamentos e artefatos
 
 O repositório adota uma separação explícita entre configuração, treinamento e execução. Em particular:
 
@@ -131,27 +131,27 @@ O repositório adota uma separação explícita entre configuração, treinament
 
 Essa organização é metodologicamente importante porque torna observáveis as decisões de modelagem adotadas ao longo do pipeline. Assim, escolhas relativas a atributos, roteamento e especialização não ficam implícitas apenas no código, mas passam a existir também como artefatos auditáveis, o que reforça a reprodutibilidade do estudo.
 
-## 3.7 Justificativa metodológica da decomposição hierárquica
+### 3.7 Justificativa metodológica da decomposição hierárquica
 
 A adoção de decomposição hierárquica e especialização é justificada, neste trabalho, por três argumentos principais. Primeiro, a triagem inicial permite reduzir a complexidade imediata da decisão, organizando o problema em etapas sucessivas e potencialmente mais controláveis. Segundo, a especialização por classe ou grupo funcional cria a possibilidade de empregar modelos e subconjuntos de atributos mais adequados a regiões específicas do espaço de dados. Terceiro, a estrutura em estágios favorece uma leitura analítica mais detalhada do comportamento do sistema, pois separa a decisão de roteamento da decisão final.
 
 No estudo de caso em IDS, esses argumentos se tornam particularmente relevantes porque o domínio concentra características típicas de problemas complexos de classificação, como heterogeneidade de padrões, assimetria entre tipos de erro e necessidade de análise cuidadosa da decisão automatizada. Ainda assim, o interesse central do artigo permanece mais amplo: discutir a adequação de uma arquitetura hierárquica como estratégia de IA aplicada, utilizando a detecção de intrusões como ambiente de validação metodológica.
 
-## 3.8 Considerações de escopo
+### 3.8 Considerações de escopo
 
 A metodologia apresentada neste artigo está condicionada ao escopo experimental efetivamente sustentado pelos artefatos disponíveis no repositório. Por essa razão, a descrição da arquitetura e do pipeline foi construída de forma conservadora, preservando aderência à implementação real e evitando a inclusão de componentes, variações ou protocolos não documentados. Essa escolha é coerente com a proposta do trabalho, que privilegia uma análise metodologicamente rastreável da arquitetura em dois estágios, em vez de uma formulação excessivamente abrangente ou especulativa.
 
 ## 4 Experimentos
 
-## 4.1 Delineamento experimental
+### 4.1 Delineamento experimental
 
 O delineamento experimental deste artigo foi estruturado para avaliar, de forma reprodutível, a arquitetura GKS (*Gatekeeper + Specialists*) em três leituras complementares do problema: um cenário principal multiclasse no CIC-IDS2018, um cenário secundário binário no UNSW-NB15 e um baseline XGBoost monolítico binário no recorte robusto do CIC. Os scripts e configurações do pipeline são versionados no repositório; os valores reportados nesta seção foram verificados diretamente nos artefatos atuais de `data/`, `outputs/` e `reports/`, evitando o uso de números externos ao snapshot experimental disponível.
 
 O cenário principal utiliza o dataset **CIC-IDS2018**, com rótulos agregados em sete classes: Benign, Bot, BruteForce, DDoS, DoS, Others e Web. O cenário secundário utiliza o **UNSW-NB15** em formulação binária estrita (Normal vs. Attack), com função de verificação de consistência externa. Para o CIC, um baseline monolítico XGBoost é incluído como referência comparativa.
 
-## 4.2 Datasets e preparação
+### 4.2 Datasets e preparação
 
-### CIC-IDS2018
+#### CIC-IDS2018
 
 O dataset CIC-IDS2018 é composto por dez arquivos CSV diários, totalizando aproximadamente 6,5 GB de tráfego de rede capturado em condições controladas. Os arquivos cobrem datas entre fevereiro e março de 2018, com tipos de ataque variados por dia. O download foi realizado via Kaggle (`solarmainframe/ids-intrusion-csv`).
 
@@ -178,7 +178,7 @@ No snapshot atual, a distribuição observada em `train_cic.csv` é: 124.000 amo
 
 A ausência da classe Web no holdout de avaliação é consequência direta da distribuição temporal do dataset: as 928 amostras de Web no treino concentram-se nos dias 22 e 23 de fevereiro, e o offset de 30.000 linhas não capturou amostras adicionais dessa classe. Essa limitação é declarada explicitamente como restrição do protocolo adotado.
 
-### UNSW-NB15
+#### UNSW-NB15
 
 O UNSW-NB15 foi obtido via Kaggle (`mrwellsdavid/unsw-nb15`). O dataset disponibiliza arquivos oficiais de treino e teste gerados pelos criadores, que foram utilizados diretamente sem reamostragem adicional. O arquivo `UNSW_NB15_training-set.csv` serviu como base de treino e o `UNSW_NB15_testing-set.csv` como holdout. Os rótulos originais `0/1` foram mapeados para `Normal`/`Attack`. A coluna `id` (índice sequencial) foi descartada explicitamente como metadado.
 
@@ -189,7 +189,7 @@ O UNSW-NB15 foi obtido via Kaggle (`mrwellsdavid/unsw-nb15`). O dataset disponib
 
 O split invertido (holdout maior que treino) é o split oficial do dataset e amplamente adotado na literatura comparável, incluindo Mohale e Obagbuwa (2025), o que facilita comparação direta com trabalhos relacionados.
 
-## 4.3 Configuração da arquitetura GKS
+### 4.3 Configuração da arquitetura GKS
 
 A arquitetura foi configurada de forma idêntica para os dois datasets, respeitando a lógica de seleção automática de especialistas implementada no projeto:
 
@@ -213,13 +213,13 @@ Os especialistas selecionados para o CIC foram:
 
 Para o UNSW, XGBoost foi selecionado para ambas as classes (F1_k: Attack=0.968, Normal=0.960).
 
-## 4.4 Baseline
+### 4.4 Baseline
 
 O baseline monolítico adota um classificador XGBoost global treinado sobre `train_cic_robust.csv` (sem `dst_port`) e avaliado em `cic_eval_robust.csv`. A formulação é binária estrita — Benign vs. Attack — sem distinção entre tipos de ataque. Essa configuração representa o modelo de referência mais direto: um classificador único que trata o problema como separação benigno/malicioso, sem qualquer decomposição hierárquica.
 
 A comparação entre o GKS e o baseline é deliberadamente assimétrica em formulação: o GKS avalia 7 classes granulares enquanto o baseline avalia 2. Essa assimetria é intencional e metodologicamente relevante — ela expressa exatamente o trade-off central do artigo: granularidade de decisão versus desempenho agregado.
 
-## 4.5 Métricas e protocolo de avaliação
+### 4.5 Métricas e protocolo de avaliação
 
 As métricas reportadas são: F1-macro, acurácia global, precision e recall por classe, matriz de confusão absoluta e latência média por estágio. O F1-macro é a métrica principal de comparação por ser invariante ao desbalanceamento de classes. A latência é medida em milissegundos por amostra, com separação entre o tempo do gatekeeper (estágio 1) e o tempo do especialista (estágio 2).
 
@@ -229,7 +229,7 @@ Todos os artefatos de avaliação usados neste artigo — predições, relatóri
 
 Esta seção apresenta os resultados obtidos na campanha experimental descrita na Seção 4. Os valores reportados derivam exclusivamente dos artefatos atuais gerados durante a execução — `classification_report_eval.csv`, `confusion_matrix_eval.csv`, `metrics_again.json`, `preds.csv` e os CSVs do baseline — sem interpolação manual posterior. Os valores tabulados por classe foram arredondados a três casas decimais.
 
-## 5.1 Cenário principal — CIC-IDS2018 (GKS, 7 classes)
+### 5.1 Cenário principal — CIC-IDS2018 (GKS, 7 classes)
 
 A avaliação da arquitetura GKS no holdout do CIC-IDS2018 (`cic_eval.csv`, n=100.000) produziu os seguintes resultados agregados:
 
@@ -259,6 +259,11 @@ Os resultados por classe são apresentados na Tabela 1.
 
 A figura `confusion_matrix_cic.png` (Figura 1) e `f1_per_class_cic.png` (Figura 2) consolidam visualmente esses resultados.
 
+![Figura 1 - Matriz de confusão do GKS no CIC-IDS2018.](../reports/cic/confusion_matrix_cic.png){ width=14cm }
+
+![Figura 2 - F1 por classe do GKS no CIC-IDS2018.](../reports/cic/f1_per_class_cic.png){ width=14cm }
+
+
 Os principais padrões observados na matriz de confusão são:
 
 - **Benign:** classificação quase perfeita (46.978 corretos, 5 erros para Web — desprezível).
@@ -269,7 +274,7 @@ Os principais padrões observados na matriz de confusão são:
 - **Web:** F1=0.000, ausente no holdout. Classe com apenas 928 amostras no treino, sem representação no offset de avaliação.
 - **Others:** F1=1.000, mas com suporte de apenas 1 amostra — resultado estatisticamente irrelevante.
 
-## 5.2 Cenário secundário — UNSW-NB15 (GKS, binário)
+### 5.2 Cenário secundário — UNSW-NB15 (GKS, binário)
 
 A avaliação no holdout do UNSW-NB15 (`unsw_eval.csv`, n=175.341) produziu:
 
@@ -293,9 +298,14 @@ A matriz de confusão (`confusion_matrix_unsw_bin.png`) revela que o modelo clas
 
 As figuras `confusion_matrix_unsw_bin.png` (Figura 3) e `f1_per_class_unsw_bin.png` (Figura 4) sintetizam visualmente esse comportamento.
 
+![Figura 3 - Matriz de confusão do GKS no UNSW-NB15.](../reports/unsw_bin/confusion_matrix_unsw_bin.png){ width=14cm }
+
+![Figura 4 - F1 por classe do GKS no UNSW-NB15.](../reports/unsw_bin/f1_per_class_unsw_bin.png){ width=14cm }
+
+
 O padrão observado é assimétrico: o modelo tem alta precision para Attack (0.984) mas recall moderado (0.829), enquanto para Normal apresenta precision mais baixa (0.727) e recall elevado (0.971). Em termos operacionais, o sistema tende a ser mais conservador na sinalização de Normal — preferindo classificar como Attack na dúvida — o que é um comportamento defensável em cenários de IDS onde falsos negativos têm custo operacional maior.
 
-## 5.3 Baseline — XGBoost monolítico, CIC-IDS2018 (binário)
+### 5.3 Baseline — XGBoost monolítico, CIC-IDS2018 (binário)
 
 O baseline XGBoost global, avaliado em `cic_eval_robust.csv` (n=100.000), produziu:
 
@@ -314,7 +324,7 @@ O baseline XGBoost global, avaliado em `cic_eval_robust.csv` (n=100.000), produz
 
 A matriz de confusão do baseline registra 46.738 Benign corretos (245 falsos positivos) e 50.890 Attack corretos (2.127 falsos negativos).
 
-## 5.4 Comparação consolidada
+### 5.4 Comparação consolidada
 
 **Tabela 4 — Comparação GKS vs. Baseline (CIC-IDS2018)**
 
@@ -333,7 +343,7 @@ Como leitura auxiliar, colapsando-se as predições do GKS no CIC para a formula
 
 Esta seção interpreta os resultados apresentados na Seção 5 à luz da hipótese central do artigo: a de que uma arquitetura hierárquica em dois estágios, com gatekeeper e especialistas, constitui uma estratégia de IA plausível e analiticamente útil para problemas complexos de classificação. A discussão é conduzida em torno de quatro eixos: adequação da decomposição hierárquica, comportamento por classe, trade-offs de custo e granularidade, e limitações do estudo.
 
-## 6.1 Adequação da decomposição hierárquica
+### 6.1 Adequação da decomposição hierárquica
 
 Os resultados do CIC-IDS2018 mostram que a arquitetura GKS é operacionalmente viável: acurácia de 93,3% e F1-macro de 0,764 em um problema de 7 classes, com gatekeeper responsável por triagem inicial e especialistas dedicados a cada categoria de ataque. O sistema classificou corretamente a esmagadora maioria das amostras das classes bem representadas — Benign (F1=0,986), DDoS (F1=1,000) e DoS (F1=0,868) — demonstrando que a decomposição hierárquica organiza a decisão de forma coerente quando o volume de dados por subproblema é suficiente.
 
@@ -341,7 +351,7 @@ O resultado do UNSW-NB15 (F1-macro=0,866) reforça a consistência externa dessa
 
 Esses resultados são coerentes com a literatura recente. Uddin et al. (2024) mostram que classificação hierárquica não melhora necessariamente o F1-macro global, mas reduz erros específicos de maior custo operacional — como falsos negativos. No presente estudo, a comparação principal mostra o GKS multiclasse com F1-macro inferior ao baseline binário; entretanto, quando suas predições no CIC são colapsadas para `Benign` vs. `Attack`, o desempenho sobe para F1-macro 0,9869 e acurácia 98,689%. Isso indica que a maior dificuldade da arquitetura não está em detectar intrusão, mas em separar subclasses de ataque com fronteiras sobrepostas.
 
-## 6.2 Comportamento por classe e análise de erros
+### 6.2 Comportamento por classe e análise de erros
 
 A análise por classe revela padrões que o F1-macro agregado não captura.
 
@@ -353,7 +363,7 @@ A análise por classe revela padrões que o F1-macro agregado não captura.
 
 **Web com F1=0.000:** A ausência de amostras Web no holdout é consequência do protocolo de coleta proporcional por offset — as 928 amostras Web no treino foram todas coletadas dentro do range 0–30.000 das linhas dos arquivos de fevereiro 22 e 23, sem linhas adicionais disponíveis no range 30.000–40.000. Esse resultado deve ser lido como limitação de protocolo, não como incapacidade do especialista: o especialista Web (Random Forest, F1_k=0.901 na validação interna) demonstrou capacidade razoável na validação interna com os dados disponíveis.
 
-## 6.3 Trade-off granularidade vs. desempenho agregado
+### 6.3 Trade-off granularidade vs. desempenho agregado
 
 A comparação entre GKS (F1-macro=0,764, 7 classes) e baseline XGBoost (F1-macro=0,976, 2 classes) ilustra com clareza o trade-off central da arquitetura hierárquica: granularidade de discriminação ao custo de F1-macro menor na formulação principal reportada.
 
@@ -363,7 +373,7 @@ A comparação mais informativa é outra: dado um sistema que precisa não apena
 
 O colapso auxiliar do GKS para `Benign` vs. `Attack` ajuda a qualificar esse trade-off. Nesse cenário derivado, o pipeline atinge F1-macro 0,9869 e erra apenas 1.306 ataques como benignos no holdout do CIC. O resultado não substitui o baseline robusto, porque não usa o mesmo recorte de atributos, mas reforça que a maior parte da perda de desempenho está na taxonomia interna dos ataques, não na detecção de intrusão em sentido amplo.
 
-## 6.4 Custo computacional e latência
+### 6.4 Custo computacional e latência
 
 A latência total de 21,79 ms/amostra no CIC é dominada pelo especialista (21,79 ms) com contribuição desprezível do gatekeeper (0,000056 ms). Esse resultado confirma o design esperado da arquitetura: o gatekeeper é deliberadamente uma árvore de decisão podada de baixíssimo custo, enquanto o especialista concentra quase todo o custo computacional da inferência.
 
@@ -371,13 +381,13 @@ Em valores absolutos, 21,79 ms/amostra não é adequado para inspeção de tráf
 
 No UNSW-NB15, a latência total estimada foi de 1,401 ms/amostra, novamente dominada pelo especialista (1,401 ms) e com contribuição residual do gatekeeper (0,000058 ms). Em termos absolutos, trata-se de custo bem inferior ao observado no CIC, o que sugere que a combinação entre espaço de atributos, classes e especialistas selecionados produz um cenário inferencial mais leve. Ainda assim, a ausência de padronização de hardware e de benchmark externo impede transformar essa diferença em conclusão generalizável de eficiência.
 
-## 6.5 Interpretabilidade e papel do gatekeeper
+### 6.5 Interpretabilidade e papel do gatekeeper
 
 O gatekeeper, por ser uma árvore de decisão podada, é intrinsecamente interpretável no sentido de Al e Sagiroglu (2025) — suas regras de roteamento podem ser inspecionadas diretamente sem necessidade de técnicas post-hoc. Essa propriedade é relevante em IDS porque o analista pode auditar quais atributos determinam o roteamento, identificar possíveis pontos de manipulação adversarial e ajustar a triagem sem requalificar os especialistas.
 
 Para os especialistas, a interpretabilidade post-hoc via SHAP ou LIME permanece aplicável individualmente por classe — cada especialista processa um subproblema mais restrito que o problema global, o que potencialmente torna as explicações mais localmente coerentes. O repositório contém artefatos de XAI em `reports/cic/xai/` e `reports/cic/XAI_BRIEF.md`, mas eles correspondem a um snapshot binário legado do CIC (`Benign` vs. `Others`) e não ao cenário multiclasse principal desta campanha. Por isso, foram tratados apenas como material complementar de viabilidade, e não como evidência comparativa central do artigo.
 
-## 6.6 Limitações
+### 6.6 Limitações
 
 As principais limitações do estudo são:
 

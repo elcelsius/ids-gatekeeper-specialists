@@ -1,6 +1,6 @@
 # 06 Resultados
 
-Esta seção apresenta os resultados obtidos na campanha experimental descrita na Seção 5. Os valores reportados derivam exclusivamente dos artefatos atuais gerados durante a execução — `classification_report_eval.csv`, `confusion_matrix_eval.csv`, `metrics_again.json`, `preds.csv` e os CSVs do baseline — sem interpolação manual posterior. Os valores tabulados por classe foram arredondados a três casas decimais.
+Esta seção apresenta os resultados obtidos na campanha experimental descrita na Seção 4. Os valores reportados derivam exclusivamente dos artefatos atuais gerados durante a execução — `classification_report_eval.csv`, `confusion_matrix_eval.csv`, `metrics_again.json`, `preds.csv` e os CSVs do baseline — sem interpolação manual posterior. Os valores tabulados por classe foram arredondados a três casas decimais.
 
 ## 6.1 Cenário principal — CIC-IDS2018 (GKS, 7 classes)
 
@@ -63,6 +63,8 @@ A avaliação no holdout do UNSW-NB15 (`unsw_eval.csv`, n=175.341) produziu:
 | **Macro avg** | **0.855** | **0.900** | **0.866** | — |
 
 A matriz de confusão (`confusion_matrix_unsw_bin.png`) revela que o modelo classifica corretamente 54.362 amostras Normal e 98.933 amostras Attack, com 20.408 falsos negativos (Attack classificado como Normal) e 1.638 falsos positivos (Normal classificado como Attack).
+
+As figuras `confusion_matrix_unsw_bin.png` (Figura 3) e `f1_per_class_unsw_bin.png` (Figura 4) sintetizam visualmente esse comportamento.
 
 O padrão observado é assimétrico: o modelo tem alta precision para Attack (0.984) mas recall moderado (0.829), enquanto para Normal apresenta precision mais baixa (0.727) e recall elevado (0.971). Em termos operacionais, o sistema tende a ser mais conservador na sinalização de Normal — preferindo classificar como Attack na dúvida — o que é um comportamento defensável em cenários de IDS onde falsos negativos têm custo operacional maior.
 
