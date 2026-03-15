@@ -1,7 +1,7 @@
 # Outline do Artigo 2 (Disciplina de IA)
 
-## 1. Título provisório
-**Decomposição Hierárquica e Especialização de Modelos em Inteligência Artificial: um Estudo de Caso em Detecção de Intrusões**
+## 1. Título 
+**GKS: uma Arquitetura de IA em Dois Estágios para Classificação Complexa — Estudo de Caso em Detecção de Intrusões**
 
 ## 2. Tema
 Investigação de uma estratégia de Inteligência Artificial para problemas complexos de classificação, baseada em uma arquitetura hierárquica em dois estágios, composta por um classificador inicial de triagem (gatekeeper) e classificadores especialistas, avaliada em detecção de intrusões em redes como estudo de caso aplicado.

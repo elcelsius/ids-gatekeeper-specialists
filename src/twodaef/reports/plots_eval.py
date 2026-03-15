@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import numpy as np
 from loguru import logger
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, accuracy_score
 
 # I/O helpers centralizados
@@ -126,6 +127,50 @@ def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[n
     return y_true_raw, y_pred_raw, None
 
 
+def _build_paper_confusion_cmap() -> LinearSegmentedColormap:
+    """
+    Paleta contínua clara para paper:
+    começa em lilás suave e termina em coral claro, evitando o roxo muito escuro.
+    """
+    return LinearSegmentedColormap.from_list(
+        "paper_confusion",
+        [
+            "#f6eeff",  # lilás muito claro
+            "#ddd2ff",  # roxo suave
+            "#cfe2ff",  # azul claro
+            "#d8f3ef",  # verde-água
+            "#fff3c6",  # amarelo pastel
+            "#ffd9b0",  # pêssego
+            "#f4a7a7",  # coral claro
+        ],
+        N=256,
+    )
+
+
+def _build_series_palette(n: int) -> list[Any]:
+    base = ["#d9c5ff", "#c7dcff", "#c9efe6", "#fff0b8", "#ffd8ab", "#ffbfc0", "#d8e2ff"]
+    if n <= len(base):
+        return base[:n]
+    cmap = _build_paper_confusion_cmap()
+    return [cmap(v) for v in np.linspace(0.10, 0.95, n)]
+
+
+def _relative_luminance(rgba: Tuple[float, float, float, float]) -> float:
+    def _linearize(channel: float) -> float:
+        if channel <= 0.03928:
+            return channel / 12.92
+        return ((channel + 0.055) / 1.055) ** 2.4
+
+    r, g, b, _ = rgba
+    return 0.2126 * _linearize(r) + 0.7152 * _linearize(g) + 0.0722 * _linearize(b)
+
+
+def _build_display_labels(classes: list[Any], labels: list[str]) -> list[str]:
+    if len(labels) != len(classes):
+        return [str(c) for c in classes]
+    return [str(label) for label in labels]
+
+
 def plot_confusion_matrix(cm: np.ndarray, labels: list[str], out_png: Path, title: str = "Confusion Matrix") -> None:
     """
     Desenha e salva uma Matriz de Confusão em formato de imagem (PNG).
@@ -142,22 +187,34 @@ def plot_confusion_matrix(cm: np.ndarray, labels: list[str], out_png: Path, titl
         out_png: Caminho onde a imagem será salva.
         title: Título do gráfico.
     """
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=150)
-    im = ax.imshow(cm, interpolation="nearest")
+    display_labels = _build_display_labels(list(range(len(labels))), labels)
+    cmap = _build_paper_confusion_cmap()
+    fig_w = max(6.0, len(display_labels) * 0.9)
+    fig_h = max(5.0, len(display_labels) * 0.75)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h), dpi=180)
+    im = ax.imshow(cm, interpolation="nearest", cmap=cmap)
     ax.set_title(title)
     ax.set_xlabel("Predicted label")
     ax.set_ylabel("True label")
-    ax.set_xticks(range(len(labels)))
-    ax.set_yticks(range(len(labels)))
-    ax.set_xticklabels(labels, rotation=45, ha="right")
-    ax.set_yticklabels(labels)
+    ax.set_xticks(range(len(display_labels)))
+    ax.set_yticks(range(len(display_labels)))
+    ax.set_xticklabels(display_labels, rotation=45, ha="right")
+    ax.set_yticklabels(display_labels)
+    ax.set_facecolor("#fffaf7")
+    ax.set_xticks(np.arange(-0.5, len(display_labels), 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, len(display_labels), 1), minor=True)
+    ax.grid(which="minor", color=(1, 1, 1, 0.85), linestyle="-", linewidth=1.0)
+    ax.tick_params(which="minor", bottom=False, left=False)
 
     # valores por célula
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
-            ax.text(j, i, str(cm[i, j]), ha="center", va="center")
+            rgba = im.cmap(im.norm(cm[i, j]))
+            text_color = "#111111" if _relative_luminance(rgba) >= 0.45 else "#ffffff"
+            ax.text(j, i, str(cm[i, j]), ha="center", va="center", color=text_color, fontsize=9)
 
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label("Count")
     fig.tight_layout()
     fig.savefig(out_png)
     plt.close(fig)
@@ -190,20 +247,38 @@ def plot_f1_per_class(y_true: np.ndarray, y_pred: np.ndarray, labels: list[str],
         else:
             y_true_bin = (y_true == li).astype(int)
             y_pred_bin = (y_pred == li).astype(int)
-            f1s.append(f1_score(y_true_bin, y_pred_bin))
+            f1s.append(f1_score(y_true_bin, y_pred_bin, zero_division=0))
 
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
-    ax.bar(range(len(uniq)), f1s)
+    display_labels = _build_display_labels(uniq, labels)
+    fig_w = max(6.0, len(display_labels) * 0.95)
+    fig, ax = plt.subplots(figsize=(fig_w, 4.6), dpi=180)
+    bars = ax.bar(
+        range(len(uniq)),
+        f1s,
+        color=_build_series_palette(len(uniq)),
+        edgecolor="#5a5266",
+        linewidth=0.8,
+    )
     ax.set_xticks(range(len(uniq)))
-    # mostrar rótulos amigáveis
-    try:
-        xticks = [labels[li] if li < len(labels) else str(li) for li in uniq]
-    except Exception:
-        xticks = [str(li) for li in uniq]
-    ax.set_xticklabels(xticks, rotation=45, ha="right")
-    ax.set_ylim(0, 1.0)
+    ax.set_xticklabels(display_labels, rotation=45, ha="right")
+    ax.set_ylim(0, 1.08)
     ax.set_ylabel("F1-score")
     ax.set_title(title)
+    ax.set_axisbelow(True)
+    ax.yaxis.grid(True, linestyle="--", alpha=0.28)
+
+    for bar, value in zip(bars, f1s):
+        y = min(1.055, value + 0.02)
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            y,
+            f"{value:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color="#1a1a1a",
+        )
+
     fig.tight_layout()
     fig.savefig(out_png)
     plt.close(fig)
@@ -318,7 +393,14 @@ def make_eval_plots(
         uniq = sorted(uniq, key=lambda u: 0 if str(u).strip().lower() == "benign" else 1)
 
     if class_labels is not None:
-        labels = class_labels
+        if len(class_labels) != len(uniq):
+            logger.warning(
+                f"class_labels tem {len(class_labels)} itens, mas encontrei {len(uniq)} classes; "
+                "vou usar os rótulos detectados automaticamente."
+            )
+            labels = [str(u) for u in uniq]
+        else:
+            labels = class_labels
     else:
         if mapping:  # binário com rótulos amigáveis
             labels = [mapping.get("0", "0"), mapping.get("1", "1")]
@@ -327,7 +409,7 @@ def make_eval_plots(
 
     # Métricas
     cm = confusion_matrix(y_true, y_pred, labels=uniq)
-    f1_macro = float(f1_score(y_true, y_pred, average="macro"))
+    f1_macro = float(f1_score(y_true, y_pred, average="macro", zero_division=0))
     acc = float(accuracy_score(y_true, y_pred))
 
     # Sufixo de arquivo por dataset

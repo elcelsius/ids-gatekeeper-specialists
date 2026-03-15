@@ -2,7 +2,7 @@
 
 ## 1. Identidade do artigo
 
-- **Título provisório:** Decomposição Hierárquica e Especialização de Modelos em Inteligência Artificial: um Estudo de Caso em Detecção de Intrusões.
+- **Título do artigo:** GKS: uma arquitetura de IA em dois estágios para problemas complexos de classificação: estudo de caso em detecção de intrusões.
 - **Tipo de artigo:** estudo metodológico de Inteligência Artificial aplicada, com validação experimental em estudo de caso.
 - **Área principal:** Inteligência Artificial (aprendizado de máquina para problemas de classificação complexa).
 - **Domínio de aplicação:** detecção de intrusões em redes (IDS), tratada como ambiente de validação e não como centro conceitual do paper.

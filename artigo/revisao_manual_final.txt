@@ -1,0 +1,179 @@
+REVISAO MANUAL DO ARTIGO FINAL
+
+Objetivo
+- Conferir se o manuscrito final e a versao Word estao coerentes com os artefatos oficiais do snapshot atual do projeto.
+- Evitar revisar o artigo final com base em arquivos legados ou em resumos intermediarios desatualizados.
+
+Arquivo final a revisar
+- Manuscrito principal:
+  artigo/artigo_completo.md
+- Entrega Word:
+  artigo/artigo_completo.docx
+- Base de exportacao para Word:
+  artigo/artigo_completo_export_docx.md
+
+Ordem recomendada de revisao humana
+1. Ler artigo/artigo_completo.md como fonte canonica do conteudo.
+2. Conferir artigo/artigo_completo.docx para layout, figuras, tabelas e hierarquia de titulos.
+3. Se houver diferenca entre .md e .docx, usar artigo/artigo_completo_export_docx.md para entender se a diferenca veio apenas da camada de exportacao.
+4. Conferir numeros e afirmacoes com os artefatos oficiais em reports/ e outputs/.
+5. Conferir se as referencias citadas no texto aparecem na secao Referencias e em references/references.bib.
+
+Arquivos que o humano deve revisar e como usar cada um
+
+1) Fonte final do artigo
+- artigo/artigo_completo.md
+  Uso:
+  - Revisar texto final, estrutura, coerencia entre secoes, tabelas e secao Referencias.
+  - Este e o arquivo principal para validar conteudo.
+
+- artigo/artigo_completo.docx
+  Uso:
+  - Revisar apresentacao final: titulos, tabelas, quebra de pagina, figuras embutidas e legibilidade geral.
+  - Conferir se o conteudo bate com artigo/artigo_completo.md.
+
+- artigo/artigo_completo_export_docx.md
+  Uso:
+  - Revisar somente se houver diferenca entre o .md final e o .docx.
+  - Ele inclui as figuras e pequenos ajustes de hierarquia usados apenas na exportacao.
+
+2) Secoes-fonte do artigo
+- artigo/01_resumo.md
+- artigo/02_introducao.md
+- artigo/03_trabalhos_relacionados.md
+- artigo/04_metodologia.md
+- artigo/05_experimentos.md
+- artigo/06_resultados.md
+- artigo/07_discussao.md
+- artigo/08_conclusao.md
+  Uso:
+  - Conferir se o manuscrito consolidado nao perdeu conteudo ou criou contradicao na montagem final.
+  - Em caso de divergencia, considerar artigo/artigo_completo.md como o alvo final, mas validar se a divergencia e intencional.
+
+3) Guia do pacote oficial de evidencias
+- reports/README.md
+  Uso:
+  - Verificar quais arquivos em reports/ sao oficiais no snapshot atual.
+  - Evitar usar artefatos legados por engano.
+
+- reports/run_manifest.md
+  Uso:
+  - Verificar o inventario dos artefatos usados na consolidacao do paper.
+  - Serve como ponto de rastreabilidade do snapshot atual.
+
+4) Tabelas e resumos oficiais em reports/
+- reports/table_main_results.md
+- reports/table_baseline_comparison.md
+- reports/latency_summary.md
+- reports/confusion_matrix_main.md
+- reports/confusion_matrix_unsw_bin.md
+- reports/confusion_matrix_baseline.md
+  Uso:
+  - Conferir se as tabelas do artigo final batem com os resumos oficiais promovidos para reports/.
+  - Conferir rapidamente metricas agregadas, comparacao com baseline e matrizes de confusao tabulares.
+
+- reports/cic/RELATORIO_CIC.md
+- reports/unsw_bin/RELATORIO_UNSW.md
+  Uso:
+  - Conferir a narrativa tecnica e a interpretacao resumida dos dois cenarios.
+  - Servem como apoio para validar texto de resultados, discussao e conclusao.
+
+5) Fontes primarias dos numeros em outputs/
+- outputs/eval_cic/classification_report_eval.csv
+- outputs/eval_cic/confusion_matrix_eval.csv
+- outputs/eval_cic/preds.csv
+  Uso:
+  - Fonte primaria do cenario principal CIC.
+  - Validar metricas por classe, macro avg, erros dominantes, suporte das classes e latencia.
+
+- outputs/eval_unsw/classification_report_eval.csv
+- outputs/eval_unsw/confusion_matrix_eval.csv
+- outputs/eval_unsw/preds.csv
+  Uso:
+  - Fonte primaria do cenario complementar UNSW.
+  - Validar metricas binaria, matriz de confusao e latencia.
+
+- outputs/cic_robust_xgb_baseline/metrics_cic_robust_xgb_baseline.csv
+- outputs/cic_robust_xgb_baseline/confusion_matrix_cic_robust_xgb_baseline.csv
+  Uso:
+  - Fonte primaria do baseline robusto no CIC.
+  - Validar F1-macro, acuracia e matriz de confusao do baseline oficial.
+
+6) Resumos JSON de metricas
+- reports/cic/metrics_again.json
+- reports/unsw_bin/metrics_again.json
+  Uso:
+  - Conferencia rapida das metricas agregadas de CIC e UNSW.
+  - Use para spot check, nao como unica fonte quando houver necessidade de explicar erros por classe.
+
+7) Bibliografia e referencias
+- references/references.bib
+  Uso:
+  - Conferir se os trabalhos citados no texto estao cadastrados.
+  - Conferir autores, ano, titulo e DOI/URL quando aplicavel.
+
+- Secao Referencias dentro de artigo/artigo_completo.md
+  Uso:
+  - Conferir se a lista final do manuscrito esta coerente com as citacoes do texto.
+  - Conferir se nao ha referencia listada sem uso claro no artigo.
+
+Valores-chave para spot check rapido
+- CIC GKS:
+  - F1-macro: 0.764
+  - Acuracia: 93,3%
+  - Macro avg: precision 0.814 / recall 0.743 / F1 0.764
+  - Latencia total: 21,79 ms/amostra
+
+- UNSW GKS:
+  - F1-macro: 0.866
+  - Acuracia: 87,4%
+  - Latencia total: 1,401 ms/amostra
+
+- Baseline XGBoost robusto no CIC:
+  - F1-macro: 0.976
+  - Acuracia: 97,6%
+
+- Leitura auxiliar do GKS colapsado para Benign vs Attack no CIC:
+  - Acuracia: 98,689%
+  - F1-macro: 0.9869
+  - Observacao: este numero e auxiliar e nao substitui o baseline oficial.
+
+Pontos narrativos que merecem revisao humana atenta
+- Verificar se o artigo deixa claro que:
+  - CIC e o cenario principal em 7 classes.
+  - UNSW e um cenario complementar binario.
+  - O baseline oficial no CIC e binario e, por isso, a comparacao e metricamente assimetrica.
+  - A classe Web nao aparece no holdout do CIC.
+  - A principal confusao no CIC e BruteForce -> DoS.
+  - Os artefatos de XAI do CIC sao legados e complementares, nao evidencia central do cenario principal.
+
+Pontos de referencia que o humano deve verificar no texto final
+- Seccao de resultados:
+  - artigo/06_resultados.md
+  - artigo/artigo_completo.md
+  Conferir se os numeros batem com outputs/ e reports/.
+
+- Seccao de discussao:
+  - artigo/07_discussao.md
+  - artigo/artigo_completo.md
+  Conferir se a interpretacao nao extrapola os artefatos.
+
+- Seccao de referencias:
+  - artigo/artigo_completo.md
+  - references/references.bib
+  Conferir se autores e anos usados no texto batem com a bibliografia.
+
+Arquivos que NAO devem ser usados como base principal
+- reports/cic/XAI_BRIEF.md
+- reports/cic/xai/xai_shap_consolidado.md
+- reports/cic/EXPERIMENTOS_BOOSTERS.md
+- reports/unsw_bin/metrics_again_unsw_legacy.json
+  Motivo:
+  - Sao materiais legados ou complementares.
+  - Podem ser consultados apenas como contexto, nunca como fonte principal para validar o artigo final.
+
+Criterio final de aprovacao humana
+- O artigo/artigo_completo.md e o artigo/artigo_completo.docx devem estar coerentes entre si.
+- Os numeros do artigo devem bater com outputs/ e com os artefatos oficiais listados em reports/README.md.
+- As referencias citadas no texto devem existir tanto na secao Referencias do manuscrito quanto em references/references.bib.
+- Nenhuma afirmacao central do artigo deve depender de arquivo legado.
