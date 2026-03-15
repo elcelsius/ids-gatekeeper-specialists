@@ -1,6 +1,6 @@
 # 03 Trabalhos Relacionados
 
-## 3.0 Decomposição da decisão em IA: especialização de modelos e roteamento
+## 3.1 Decomposição da decisão em IA: especialização de modelos e roteamento
 
 A ideia de decompor um problema complexo de classificação entre múltiplos modelos especializados, coordenados por um mecanismo de roteamento, representa uma direção consolidada na literatura de Inteligência Artificial. O paradigma de *Mixture of Experts* (MoE), cujas raízes remontam ao início dos anos 1990, propõe que uma rede de roteamento (*gating network*) aprenda a distribuir as instâncias de entrada entre especialistas, cada um responsável por uma região do espaço do problema. Em revisão recente e abrangente, Cai et al. (2024) documentam a trajetória desse paradigma desde suas formulações clássicas até sua adoção em larga escala em modelos de linguagem de grande porte, mostrando que o princípio central permanece o mesmo: especialistas distintos ativados seletivamente por um mecanismo de roteamento produzem ganhos de eficiência e especialização que modelos monolíticos não conseguem replicar sem custo computacional proporcional.
 
@@ -8,7 +8,7 @@ Para o presente artigo, o interesse no paradigma MoE não está em suas aplicaç
 
 Do ponto de vista de ensemble learning, Ganaie et al. (2022) mostram que combinações de classificadores produzem ganhos consistentes especialmente quando os modelos componentes cometem erros em regiões distintas — o que os autores denominam diversidade funcional. A arquitetura em dois estágios explorada neste artigo torna essa diversidade explícita ao separar estruturalmente o problema de triagem (gatekeeper) do problema de discriminação refinada (especialistas), em vez de simplesmente combinar classificadores de forma indistinta.
 
-## 3.1 Classificação complexa e arquiteturas hierárquicas em IA aplicada
+## 3.2 Classificação complexa e arquiteturas hierárquicas em IA aplicada
 
 A literatura de Inteligência Artificial aplicada tem discutido, de forma recorrente, as limitações de modelos monolíticos em problemas de classificação que apresentam heterogeneidade interna, sobreposição entre classes, fronteiras de decisão difíceis e necessidade de tratamento diferenciado para subconjuntos do espaço de entrada. Nesse contexto, arquiteturas hierárquicas e estratégias de decomposição da decisão surgem como alternativas metodológicas relevantes, pois permitem organizar o processo inferencial em múltiplos estágios, com diferentes níveis de granularidade.
 
@@ -18,7 +18,7 @@ Além disso, propostas multicamadas recentes, como o sistema MIDES (Agate et al.
 
 O MIDES é, dentre os trabalhos analisados, o mais próximo arquiteturalmente da proposta investigada neste artigo. A diferença central está no mecanismo de seleção de especialistas: enquanto o MIDES emprega um Arbiter que raciocina dinamicamente sobre confiança e desempenho por rodada de inferência, o 2D-AEF seleciona especialistas em tempo de treino com base em F1 por classe e latência medida, privilegiando interpretabilidade e previsibilidade do fluxo de inferência.
 
-## 3.2 IDS com aprendizado de máquina como estudo de caso de classificação complexa
+## 3.3 IDS com aprendizado de máquina como estudo de caso de classificação complexa
 
 A detecção de intrusões baseada em aprendizado de máquina consolidou-se como uma área aplicada importante, em parte pela dificuldade de sistemas puramente baseados em assinatura acompanharem a diversidade e a evolução dos ataques. Ao mesmo tempo, a literatura recente mostra que o desempenho de IDS com ML não depende apenas da escolha do algoritmo, mas também da qualidade do desenho experimental, da seleção de datasets, do tratamento de desbalanceamento, da escolha de métricas e da clareza das comparações realizadas.
 
@@ -26,7 +26,7 @@ A revisão sistemática de Rehman et al. (2025) é particularmente útil nesse p
 
 Nesse sentido, alguns trabalhos herdados da linha do projeto 2D-AEF continuam conceitualmente relevantes. Propostas como *A Novel Ensemble Framework for an Intelligent Intrusion Detection System* e *LCCDE: A Decision-Based Ensemble Framework for Intrusion Detection in the Internet of Vehicles* ajudam a mostrar que a combinação de modelos, a decisão orientada por classe e o uso de múltiplos classificadores já constituem uma direção consolidada em IDS. O presente artigo, contudo, reposiciona essa discussão ao enfatizar menos a ideia de ensemble como simples mecanismo de aumento de desempenho e mais a noção de decomposição hierárquica da decisão como estratégia de IA (Mou et al., 2021; Almomani et al., 2022).
 
-## 3.3 Especialização de modelos, roteamento e subproblemas de decisão
+## 3.4 Especialização de modelos, roteamento e subproblemas de decisão
 
 Um dos pontos centrais do presente artigo é a hipótese de que a especialização de classificadores pode ser útil quando o problema global contém subestruturas com padrões distintos. Essa ideia aparece, de formas variadas, em arquiteturas orientadas por classe, em mecanismos de roteamento entre modelos e em sistemas que combinam triagem inicial com análise especializada posterior. Ainda que os trabalhos da literatura nem sempre utilizem a mesma terminologia de gatekeeper e especialistas, muitos deles compartilham a intuição de que diferentes regiões do espaço de decisão podem se beneficiar de tratamentos específicos.
 
@@ -34,7 +34,7 @@ Do ponto de vista teórico em IA, o paradigma MoE revisitado por Cai et al. (202
 
 No contexto de IDS, o uso de ensembles orientados por classe e de estruturas multicamadas, como demonstrado pelo MIDES (Agate et al., 2025), reforça que essa lógica de especialização produz resultados competitivos quando combinada com mecanismos de seleção explícita de estratégia por amostra. Além disso, Ganaie et al. (2022) mostram empiricamente que a diversidade funcional entre classificadores — medida pela correlação entre seus erros — é o principal preditor de ganho em ensemble, reforçando que arquiteturas que estruturam explicitamente essa diversidade têm fundamento teórico mais sólido do que abordagens puramente votativas.
 
-## 3.4 XAI em sistemas de detecção de intrusões
+## 3.5 XAI em sistemas de detecção de intrusões
 
 À medida que sistemas IDS baseados em ML incorporam modelos de maior complexidade, a opacidade das decisões torna-se um problema prático. Analistas humanos precisam compreender, ao menos aproximadamente, por que determinado alerta foi gerado — seja para validar o modelo, priorizar respostas ou justificar decisões perante regulações como o GDPR.
 
@@ -48,7 +48,7 @@ Khan et al. (2025) ampliam essa discussão para o que denominam *adversarial XAI
 
 Para o presente artigo, a literatura de XAI cumpre um papel complementar. O objetivo não é deslocar o foco para explicabilidade, mas reconhecer que, em uma arquitetura hierárquica com múltiplas etapas de decisão, mecanismos interpretáveis podem contribuir para inspecionar a coerência do fluxo inferencial e apoiar a análise dos artefatos experimentais disponíveis. Interpretabilidade entra, portanto, como dimensão analítica adicional, e não como eixo central do artigo (Pawlicki et al., 2024; Al & Sagiroglu, 2025).
 
-## 3.5 Síntese crítica e posicionamento do artigo
+## 3.6 Síntese crítica e posicionamento do artigo
 
 A literatura recente converge para quatro constatações relevantes para o presente artigo.
 

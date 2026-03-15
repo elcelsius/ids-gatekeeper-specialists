@@ -32,6 +32,35 @@ def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[n
         Um conjunto (Tuple) contendo os índices verdadeiros corrigidos para inteiro, os índices preditos 
         corrigidos para inteiro, e caso haja tido conversão, um dicionário explicando qual string virou qual inteiro.
     """
+    # Se ambos já vierem como rótulos textuais binários válidos,
+    # preserva exatamente como estão (evita remapeamento indevido do UNSW).
+    def _is_named_binary(a: np.ndarray) -> bool:
+        vals = {str(v).strip().lower() for v in a}
+        vals.discard("")
+        if not vals:
+            return False
+        allowed = {
+            "0",
+            "1",
+            "normal",
+            "attack",
+            "benign",
+            "other",
+            "others",
+            "clean",
+            "legit",
+            "malicious",
+            "anomaly",
+            "intrusion",
+        }
+        has_named = any(v not in {"0", "1"} for v in vals)
+        return has_named and vals.issubset(allowed)
+
+    if _is_named_binary(y_true_raw) and _is_named_binary(y_pred_raw):
+        y_true_txt = np.asarray([str(v) for v in y_true_raw], dtype=str)
+        y_pred_txt = np.asarray([str(v) for v in y_pred_raw], dtype=str)
+        return y_true_txt, y_pred_txt, None
+
     # já inteiros?
     def _to_int_safe(a):
         try:
@@ -84,7 +113,11 @@ def _try_align_spaces(y_true_raw: np.ndarray, y_pred_raw: np.ndarray) -> Tuple[n
     y_pred_m, ok_pred_m = _map_array(y_pred_raw)
 
     if ok_true_m and ok_pred_m:
-        mapping = {"0": "Benign", "1": "Others"}
+        tokens = {str(v).strip().lower() for v in np.concatenate((y_true_raw, y_pred_raw))}
+        if any("normal" in t for t in tokens) and any("attack" in t for t in tokens):
+            mapping = {"0": "Normal", "1": "Attack"}
+        else:
+            mapping = {"0": "Benign", "1": "Others"}
         acc = float(accuracy_score(y_true_m, y_pred_m))
         logger.info(f"Alinhamento automático aplicado (binário): {mapping} | acc={acc:.6f}")
         return y_true_m, y_pred_m, mapping
@@ -278,11 +311,17 @@ def make_eval_plots(
 
     # Labels (legendas) para o gráfico
     uniq = sorted(set(y_true) | set(y_pred))
+    uniq_lc = {str(u).strip().lower() for u in uniq}
+    if uniq_lc == {"normal", "attack"}:
+        uniq = sorted(uniq, key=lambda u: 0 if str(u).strip().lower() == "normal" else 1)
+    elif uniq_lc == {"benign", "others"}:
+        uniq = sorted(uniq, key=lambda u: 0 if str(u).strip().lower() == "benign" else 1)
+
     if class_labels is not None:
         labels = class_labels
     else:
         if mapping:  # binário com rótulos amigáveis
-            labels = ["Benign", "Others"]
+            labels = [mapping.get("0", "0"), mapping.get("1", "1")]
         else:
             labels = [str(u) for u in uniq]
 
@@ -297,8 +336,8 @@ def make_eval_plots(
     f1_png = outp / f"f1_per_class{suffix}.png"
 
     # Plots
-    plot_confusion_matrix(cm, labels, cm_png, title=f"Confusion Matrix (2D-AEF{suffix})")
-    plot_f1_per_class(y_true, y_pred, labels, f1_png, title=f"F1 per class (2D-AEF{suffix})")
+    plot_confusion_matrix(cm, labels, cm_png, title=f"Confusion Matrix (GKS{suffix})")
+    plot_f1_per_class(y_true, y_pred, labels, f1_png, title=f"F1 per class (GKS{suffix})")
 
     # Salva métricas recomputadas
     payload = {

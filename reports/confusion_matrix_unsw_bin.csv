@@ -1,0 +1,4 @@
+true_label,pred_Normal,pred_Attack,row_total
+Normal,54362,1638,56000
+Attack,20408,98933,119341
+col_total,74770,100571,175341

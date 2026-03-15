@@ -1,6 +1,14 @@
-# Relatório XAI Consolidado (SHAP)
+# Relatorio XAI Consolidado (SHAP) - CIC binario legado
+
+## Aviso de escopo
+
+Este consolidado descreve um **snapshot binario legado** do CIC (`Benign` vs `Others`).
+Ele **nao** corresponde ao cenario principal atual do paper, que hoje e **multiclasse em 7 classes**.
+
+Use este arquivo apenas como material complementar historico de interpretabilidade.
+
 ## Classe Benign
-| Rank | Feature | |SHAP| médio |
+| Rank | Feature | |SHAP| medio |
 |---:|---|---:|
 | 1 | `dst_port` | 0.032328 |
 | 2 | `init_fwd_win_byts` | 0.005212 |
@@ -14,7 +22,7 @@
 | 10 | `fwd_pkt_len_max` | 0.000201 |
 
 ## Classe Others
-| Rank | Feature | |SHAP| médio |
+| Rank | Feature | |SHAP| medio |
 |---:|---|---:|
 | 1 | `dst_port` | 0.033028 |
 | 2 | `init_fwd_win_byts` | 0.005241 |
@@ -26,4 +34,3 @@
 | 8 | `fwd_header_len` | 0.000285 |
 | 9 | `fwd_pkt_len_max` | 0.000205 |
 | 10 | `active_min` | 0.000152 |
-

@@ -1,106 +1,83 @@
-# Relatório de Avaliação — UNSW-NB15 (2D-AEF)
+# Relatorio de Avaliacao - UNSW-NB15 (2D-AEF)
 
-**Versão do experimento:** v0.1.0-unsw-mvp  
-**Data:** 2025-10-31
+## Natureza do documento
 
-## 1) Métricas Globais
+Este relatorio descreve o **snapshot atual** do cenario complementar do paper: **UNSW-NB15 em formulacao binaria** (`Normal` vs `Attack`) executado com a arquitetura **2D-AEF / GKS** (gatekeeper + especialistas).
 
-- **F1-macro:** **0.892938**  
-- **Acurácia:** **0.900987**  
-- **Amostras (n):** **175,341**  
-- **Latência média por linha (inferência 2 estágios):** ~**0.8776 ms**  
-  - Gatekeeper: ~**0.000038 ms**  
-  - Especialista: ~**0.877536 ms**
+Ele substitui a versao textual anterior que reportava metricas e latencias de um snapshot legado. Os valores abaixo foram verificados diretamente em:
 
-> Observação: As latências foram medidas no pipeline de inferência `two_stage` (Gatekeeper → Especialista), usando repetição mínima para robustez.
+- `reports/unsw_bin/metrics_again.json`
+- `outputs/eval_unsw/preds.csv`
+- `outputs/eval_unsw/confusion_matrix_eval.csv`
+- `outputs/eval_unsw/classification_report_eval.csv`
+- `reports/confusion_matrix_unsw_bin.(csv|md)`
 
-## 2) Figuras
+Para a classificacao editorial entre artefatos oficiais e materiais legados em `reports/`, usar `reports/README.md`.
 
-**Matriz de Confusão**  
-`outputs/eval_unsw/confusion_matrix.png`
+## 1) Metricas globais do snapshot atual
 
-**F1 por Classe**  
-`outputs/eval_unsw/f1_per_class.png`
+- **F1-macro:** **0.865582**
+- **Acuracia:** **0.874268**
+- **Amostras (n):** **175341**
+- **Latencia media total por amostra:** **1.401404 ms**
+- **Latencia media do gatekeeper:** **0.000058 ms**
+- **Latencia media do especialista:** **1.401346 ms**
 
-> As figuras são geradas por `python -m twodaef.cli_plot_eval` (ver Seção 6).
+Esses valores correspondem ao snapshot local consolidado em 2026-03-15 e estao alinhados ao manuscrito atual.
 
-## 3) Metodologia (resumo)
+## 2) Artefatos oficiais associados
 
-- **Framework:** 2D-AEF (Gatekeeper → Especialista por classe).  
-- **Especialistas:** seleção do par _modelo + feature set_ que maximiza **F1_k** por classe, com desempate por latência.  
-- **Dados:** `UNSW_NB15_training-set.csv` (treino/validação) + split de avaliação.  
-- **Pré-processamento:** seleção de atributos numéricos; tratamento de `inf/NaN`; interseção com feature-sets.  
-- **Métricas:** F1 por classe, **F1-macro**, Acurácia; latência média (ms/linha) por estágio e total.
+### 2.1 Figuras
+- `reports/unsw_bin/confusion_matrix_unsw_bin.png`
+- `reports/unsw_bin/f1_per_class_unsw_bin.png`
 
-## 4) Interpretação (XAI — SHAP)
+### 2.2 Matrizes e tabelas textuais
+- `reports/confusion_matrix_unsw_bin.csv`
+- `reports/confusion_matrix_unsw_bin.md`
+- `reports/table_main_results.csv`
+- `reports/table_main_results.md`
+- `reports/latency_summary.csv`
+- `reports/latency_summary.md`
+- `reports/run_manifest.md`
 
-- Para cada classe, geramos explicações SHAP do especialista vencedor.  
-- Consolidados (se executado XAI):  
-  - `outputs/xai_unsw/_consolidado/xai_shap_consolidado.csv`  
-  - `outputs/xai_unsw/_consolidado/xai_shap_consolidado.md`
+## 3) Matriz de confusao tabular
 
-> Atributos como `sbytes`, `dbytes`, `dur`, `ct_state_ttl` aparecem frequentemente entre os mais impactantes, variando por classe — corroborando o pareamento **(classificador, feature set)** por classe.
+No snapshot atual, a matriz binaria do UNSW e:
 
-## 5) Resultados (texto sugerido para artigo)
+| true_label | pred_Normal | pred_Attack | row_total |
+| --- | ---: | ---: | ---: |
+| Normal | 54362 | 1638 | 56000 |
+| Attack | 20408 | 98933 | 119341 |
+| col_total | 74770 | 100571 | 175341 |
 
-> No UNSW-NB15, o 2D-AEF atingiu **F1-macro=0,893** e **Acurácia=0,901** (n=175.341), com latência média de ~**0,878 ms** por amostra no fluxo de inferência em dois estágios (Gatekeeper→Especialista). Ao selecionar, para cada classe, o par ótimo **(modelo + conjunto de atributos)**, o framework obteve ganhos consistentes nas classes mais difíceis, mantendo custo de inferência baixo. As figuras (matriz de confusão e F1 por classe) mostram distribuição de acertos equilibrada e melhoria nas classes minoritárias frente a baselines convencionais.
+Leitura objetiva:
+- o modelo classifica corretamente **54362** amostras `Normal`;
+- o modelo classifica corretamente **98933** amostras `Attack`;
+- ha **1638** falsos positivos (`Normal -> Attack`);
+- ha **20408** falsos negativos (`Attack -> Normal`).
 
-## 6) Reprodutibilidade — comandos principais
+## 4) Interpretacao conservadora
 
-> Abaixo, comandos no PowerShell (Windows). Ajuste paths conforme seu ambiente.
+O cenario UNSW atual apresenta desempenho agregado razoavel para a tarefa binaria complementar, mas nao sustenta mais a narrativa do snapshot antigo de F1-macro proximo de 0.893 e latencia sub-0.9 ms. O valor atual correto e **F1-macro 0.865582** com **1.401404 ms** por amostra.
 
-```powershell
-# 1) Avaliação (gera outputs/eval_unsw/preds.csv e métricas)
-python -m twodaef.cli_eval_twostage `
-  --gatekeeper_model artifacts\gatekeeper.joblib `
-  --gatekeeper_features cols.txt `
-  --specialist_map artifacts\specialist_map.json `
-  --input_csv data\unsw_eval.csv `
-  --label_col label `
-  --output_dir outputs\eval_unsw `
-  --fill_missing 0.0
+Em termos operacionais, o gatekeeper continua tendo custo desprezivel e o especialista concentra praticamente toda a latencia. Em termos de erro, o principal problema esta na quantidade de ataques classificados como `Normal`, o que impõe cautela ao usar este cenario como evidencia de robustez sem qualificar a taxa de falsos negativos.
 
-# 2) Plots a partir de preds.csv
-python -m twodaef.cli_plot_eval `
-  --preds_csv outputs\eval_unsw\preds.csv `
-  --label_col label `
-  --out_dir outputs\eval_unsw
+## 5) Reprodutibilidade e limites
 
-# 3) XAI por especialista (opcional)
-# Classe 0 (exemplo):
-python -m twodaef.cli_explain_specialist `
-  --specialist_map artifacts\specialist_map.json `
-  --class_key 0 `
-  --input_csv data\unsw_eval.csv `
-  --output_dir outputs\xai_unsw `
-  --limit_samples 200 `
-  --top_k_global 12 `
-  --top_k_local 12
+A trilha de proveniencia do snapshot atual e compatível com:
 
-# 4) Agregação XAI (opcional)
-python -m twodaef.cli_xai_aggregate `
-  --xai_root outputs\xai_unsw `
-  --out_dir outputs\xai_unsw\_consolidado
-```
+- `scripts/prep_unsw_binary.py`
+- `src/twodaef/cli_train_gatekeeper.py`
+- `src/twodaef/cli_train_specialists.py`
+- `src/twodaef/cli_infer_twostage.py`
+- `src/twodaef/cli_eval_twostage.py`
+- `src/twodaef/cli_plot_eval.py`
 
-## 7) Estrutura de pastas (sugerida)
+Limites de rastreabilidade:
+- a data original da execucao nao e recuperavel com seguranca a partir dos artefatos atuais;
+- seed, hardware e duracao da execucao nao aparecem nos artefatos consolidados;
+- este relatorio descreve o **snapshot atual**, nao uma release historica especifica.
 
-```
-outputs/
-  eval_unsw/
-    preds.csv
-    confusion_matrix.png
-    f1_per_class.png
-    metrics.json (gerado por cli_eval_twostage)
-  xai_unsw/
-    class_0/
-    class_1/
-    _consolidado/
-      xai_shap_consolidado.csv
-      xai_shap_consolidado.md
-```
+## 6) XAI neste cenario
 
----
-
-**Contato / Autor:** Celso de Oliveira Lisboa  
-**Licença:** MIT
+Nao ha, no snapshot atual inspecionado para o paper, um pacote de XAI do UNSW consolidado em `reports/` com o mesmo papel de evidência textual usado no manuscrito principal. Se novos artefatos forem gerados, eles devem ser tratados como complemento e nao como evidencia retroativa desta campanha.

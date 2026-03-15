@@ -27,19 +27,19 @@ Investigar, de forma metodologicamente conservadora e reprodutível, uma arquite
 - Explicitar limitações metodológicas, ameaças à validade e escopo de generalização do estudo.
 
 ## 7. Estudo de caso e recorte experimental
-**Detecção de intrusões em redes, com ênfase em formulação binária, utilizando o CIC-IDS2018 como estudo de caso principal.**
+**Detecção de intrusões em redes, utilizando o CIC-IDS2018 em formulação multiclasse granular como estudo de caso principal.**
 
 Justificativa do recorte:
 - o domínio de IDS oferece um cenário realista de classificação complexa;
 - o projeto já possui pipeline implementado, artefatos e relatórios compatíveis com esse cenário;
-- o recorte binário permite análise mais controlada da estratégia de IA no contexto do trabalho da disciplina.
+- o cenário multiclasse do CIC permite observar não apenas detecção de intrusão, mas também o custo analítico de discriminar subclasses de ataque com especialistas dedicados.
 
-Estudo complementar opcional:
-- **UNSW-NB15 binário**, como apoio à análise de consistência externa, quando os artefatos disponíveis forem suficientes.
+Estudo complementar já materializado:
+- **UNSW-NB15 binário**, como apoio à análise de consistência externa, já sustentado pelos artefatos atuais em `reports/unsw_bin/` e `outputs/eval_unsw/`.
 
 ## 8. Possíveis baselines
 - Modelo global/monolítico de referência, quando implementado de forma comparável no projeto.
-- Baseline global XGBoost no recorte robusto do CIC, quando sustentado pelos artefatos disponíveis.
+- Baseline global XGBoost no recorte robusto do CIC, já sustentado pelos artefatos atuais e tratado como comparação oficial.
 - Variações ablatórias da própria arquitetura, como uso de conjunto ampliado de atributos versus conjunto reduzido.
 - Gatekeeper isolado, quando houver material experimental suficiente para essa comparação.
 

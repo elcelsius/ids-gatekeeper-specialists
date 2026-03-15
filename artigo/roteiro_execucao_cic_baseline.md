@@ -2,10 +2,11 @@
 
 ## Escopo desta execução
 
-- Inclui: **CIC binário**, two-stage (gatekeeper + especialistas), avaliação estruturada, métricas/plots e baseline XGBoost.
+- Inclui: **CIC multiclasse (7 classes)**, two-stage (gatekeeper + especialistas), avaliação estruturada, métricas/plots e baseline XGBoost robusto.
 - Não inclui: **UNSW**.
 - Não inclui: **XAI**.
 - Objetivo: fechar o núcleo mínimo publicável do paper com cenário principal e baseline comparável.
+- Status do snapshot atual: o núcleo CIC + baseline já está materializado em `outputs/eval_cic/`, `reports/cic/` e `outputs/cic_robust_xgb_baseline/`; este roteiro serve agora tanto para reexecução quanto para auditoria.
 
 ## Convenções
 
@@ -30,9 +31,9 @@
 
 ---
 
-## Fase 1 — Cenário principal (CIC binário)
+## Fase 1 — Cenário principal (CIC multiclasse)
 
-### [ ] 1.1 Preparação CIC binário (treino + infer)
+### [ ] 1.1 Preparação CIC multiclasse (treino + infer)
 - **Script/CLI:** `scripts/prep_cic_train.py`
 - **Comando (confirmado):**
 ```powershell
@@ -43,7 +44,7 @@ python scripts/prep_cic_train.py
 - **Dependência:** Fase 0 concluída
 - **Critério de sucesso:** os dois arquivos são gerados e `train_cic.csv` contém coluna `label`
 
-### [ ] 1.2 Preparação CIC binário (avaliação)
+### [ ] 1.2 Preparação CIC multiclasse (avaliação)
 - **Script/CLI:** `scripts/make_cic_eval.py`
 - **Comando (confirmado):**
 ```powershell
@@ -185,10 +186,10 @@ python -m twodaef.cli_plot_eval `
 
 ---
 
-## Fase 2 — Bloco comparável ao baseline (CIC robusto)
+## Fase 2 — Bloco robusto + baseline (comparação auxiliar)
 
 > Justificativa: o baseline disponível no projeto (`baseline_xgb_cic_robust.py`) usa `train_cic_robust`/`cic_eval_robust`.  
-> Para comparação justa, executar o two-stage no mesmo recorte robusto.
+> Executar o two-stage no mesmo recorte robusto ajuda a isolar o efeito da remoção de `dst_port`, mas **não** torna a comparação estritamente simétrica, porque o two-stage permanece multiclasse e o baseline continua binário.
 
 ### [ ] 2.1 Gerar recorte robusto CIC
 - **Script/CLI:** `scripts/prep_cic_robust.py`
@@ -379,4 +380,3 @@ Get-ChildItem outputs/cic_robust, outputs/cic_robust_xgb_baseline, reports/cic_r
   - `infer-twostage ...`
   - `eval-twostage ...`
   - `plot-eval ...`
-

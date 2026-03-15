@@ -6,6 +6,16 @@ Este checklist operacional tem como finalidade acompanhar a execução real da c
 
 Este documento deriva do Plano Mestre de Execução Experimental e deve ser atualizado conforme cada etapa for sendo concluída.
 
+### Estado conhecido do snapshot atual (2026-03-15)
+- [x] Cenário principal CIC multiclasse evidenciado por `outputs/eval_cic/` e `reports/cic/`.
+- [x] Cenário secundário UNSW binário evidenciado por `outputs/eval_unsw/` e `reports/unsw_bin/`.
+- [x] Baseline XGBoost robusto evidenciado por `outputs/cic_robust_xgb_baseline/`.
+- [x] `reports/run_manifest.md` consolidado a partir do snapshot atual.
+- [x] `reports/README.md` criado como guia para separar artefatos oficiais e legados em `reports/`.
+- [x] Tabelas independentes em `reports/` criadas (`table_main_results`, `table_baseline_comparison` e `latency_summary`).
+- [x] Matrizes de confusão tabulares promovidas para `reports/` (`confusion_matrix_main`, `confusion_matrix_unsw_bin` e `confusion_matrix_baseline`).
+- [~] XAI permanece restrita a um snapshot binário legado do CIC.
+
 ---
 
 ## 2. Regras de uso
@@ -17,6 +27,7 @@ Antes de marcar qualquer etapa como concluída, verificar:
 - se os arquivos de saída ficaram salvos em local padronizado;
 - se os resultados podem ser rastreados depois;
 - se os relatórios estão coerentes com o cenário executado.
+- se a classificação entre artefato oficial e legado está coerente com `reports/README.md`.
 
 Cada etapa deve registrar:
 - data;
@@ -77,7 +88,7 @@ Preencher a tabela abaixo:
 
 | Etapa | Script | Confirmado? | Observações |
 |---|---|---:|---|
-| Preparação CIC binário |  |  |  |
+| Preparação CIC multiclasse |  |  |  |
 | Preparação UNSW binário |  |  |  |
 | Treino gatekeeper |  |  |  |
 | Treino especialistas |  |  |  |
@@ -112,7 +123,7 @@ Preencher a tabela abaixo:
 - [ ] Script de avaliação identificado
 
 **Dataset:** CIC-IDS2018  
-**Formulação:** Binária  
+**Formulação:** Multiclasse agregada (7 classes)  
 **Arquitetura:** Gatekeeper + especialistas  
 **Status:**  
 
@@ -146,7 +157,7 @@ Preencher a tabela abaixo:
 
 ---
 
-## 6. Execução do cenário principal — CIC binário
+## 6. Execução do cenário principal — CIC multiclasse
 
 ### 6.1 Preparação dos dados
 - [ ] Identificar script oficial de preparação CIC
@@ -222,7 +233,7 @@ Marcar concluído apenas se existirem:
 
 ### 7.1 Preparação
 - [ ] Script do baseline identificado
-- [ ] Recorte compatível com CIC binário confirmado
+- [ ] Recorte robusto compatível com o baseline confirmado
 - [ ] Métricas equivalentes definidas
 
 **Baseline:**  

@@ -10,7 +10,7 @@ Do ponto de vista metodológico, a abordagem parte da hipótese de que, em cená
 
 A arquitetura empregada segue a lógica **Gatekeeper → Especialistas**, conforme implementada em `src/twodaef/`. No primeiro estágio, uma decisão inicial de triagem é produzida a partir de um conjunto mais enxuto de atributos, com o propósito de identificar a região do problema ou o grupo funcional ao qual a amostra parece pertencer. No segundo estágio, a amostra é encaminhada para um especialista associado ao encaminhamento definido na etapa anterior, onde ocorre a decisão mais refinada.
 
-Em termos conceituais, o primeiro estágio atua como mecanismo de organização do espaço de decisão, enquanto o segundo concentra a discriminação mais específica. No recorte binário adotado neste artigo, essa especialização permanece metodologicamente relevante, pois mesmo uma formulação com duas classes pode se beneficiar de etapas distintas de triagem e refinamento, sobretudo quando o objetivo é observar o comportamento da arquitetura em um cenário controlado e coerente com os artefatos efetivamente disponíveis no projeto.
+Em termos conceituais, o primeiro estágio atua como mecanismo de organização do espaço de decisão, enquanto o segundo concentra a discriminação mais específica. No cenário principal deste artigo, essa lógica é aplicada ao CIC-IDS2018 em formulação multiclasse de sete categorias; no cenário complementar, a mesma arquitetura é reutilizada no UNSW-NB15 em formulação binária (`Normal` vs. `Attack`). Em ambos os casos, a especialização permanece metodologicamente relevante porque separa a decisão de triagem da decisão refinada, permitindo observar onde o desempenho agregado se perde e em que estágio o custo computacional se concentra.
 
 ## 4.3 Papel do gatekeeper
 

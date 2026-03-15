@@ -1,0 +1,4 @@
+method,dataset,formulation,precision_macro,recall_macro,f1_macro,accuracy,n,latency_stage1_ms,latency_stage2_ms,latency_total_ms,source
+GKS,CIC-IDS2018,multiclasse (7 classes),0.813935,0.742720,0.764278,0.933080,100000,0.000056,21.788813,21.788869,reports/cic/metrics_again.json; outputs/eval_cic/preds.csv
+GKS,UNSW-NB15,binaria,0.855385,0.899872,0.865582,0.874268,175341,0.000058,1.401346,1.401404,reports/unsw_bin/metrics_again.json; outputs/eval_unsw/preds.csv
+XGBoost global,CIC-IDS2018 robust,binaria robusta,0.975840,0.977333,0.976239,0.976280,100000,NA,NA,NA,outputs/cic_robust_xgb_baseline/metrics_cic_robust_xgb_baseline.csv

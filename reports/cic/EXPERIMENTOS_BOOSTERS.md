@@ -1,41 +1,31 @@
-# 2D-AEF — Experimentos por Classe (CIC) — v0.2.0
+# 2D-AEF - Experimentos por Classe (CIC) - referencia legada
 
-> Objetivo: comparar **LGBM**, **XGB** e **CatBoost** nos especialistas do CIC (binário), reportando **F1 por classe** e **F1-macro**, além de observações de **latência**.
+> Objetivo historico: comparar **LGBM**, **XGB** e **CatBoost** nos especialistas de um **snapshot binario legado** do CIC, reportando **F1 por classe**, **F1-macro** e observacoes de **latencia**.
+
+## Aviso de escopo
+
+Este arquivo **nao** descreve o cenario principal atual do paper.
+
+Escopo real do documento:
+- CIC em formulacao binaria legado;
+- uso como nota experimental interna;
+- nao usar como evidencia principal do manuscrito multiclasse atual.
 
 ## Como reproduzir (resumo)
-1. Treinar especialistas por família de modelo (flag `--models`):
-   - `train-specialists --models lgbm ...`
-   - `train-specialists --models xgb ...`
-   - `train-specialists --models cat ...`
-2. Rodar `infer-twostage` e `eval-twostage` para cada variação.
-3. Consolidar métricas em CSV e preencher a tabela abaixo.
-4. (Opcional) Gerar gráfico de barras de F1-macro.
-
----
+1. Treinar especialistas por familia de modelo (flag `--models`).
+2. Rodar inferencia e avaliacao para cada variacao.
+3. Consolidar metricas em CSV e preencher a tabela abaixo.
+4. Gerar graficos, se necessario.
 
 ## Tabela de resultados
 
-| Família     | F1 (Benign) | F1 (Others) | F1-macro | Latência esp. (ms/amostra) | Observações |
-|-------------|--------------|-------------|----------|-----------------------------|-------------|
-| **LGBM**    |              |             |          |                             |             |
-| **XGB**     |              |             |          |                             |             |
-| **CatBoost**|              |             |          |                             |             |
-
-> Preencha “Latência esp. (ms/amostra)” medindo a média de N=3 rodadas por especialista com batch pequeno (ex.: 256).
-
----
-
-## Setup (anotar versões/hardware)
-- Python:
-- lightgbm:
-- xgboost:
-- catboost:
-- CPU / GPU:
-- SO:
-
----
+| Familia | F1 (Benign) | F1 (Others) | F1-macro | Latencia esp. (ms/amostra) | Observacoes |
+| --- | --- | --- | --- | --- | --- |
+| LGBM |  |  |  |  |  |
+| XGB |  |  |  |  |  |
+| CatBoost |  |  |  |  |  |
 
 ## Notas
-- Fixar `random_state` para reprodutibilidade.
-- Salvar qual família foi usada por classe no `specialist_map_cic.json`.
-- Manter este arquivo versionado (não subir `.joblib`).
+- manter este arquivo como registro historico interno;
+- nao inferir a partir dele conclusoes sobre o GKS multiclasse atual;
+- para o snapshot atual do paper, usar `reports/cic/RELATORIO_CIC.md`, `reports/table_main_results.md` e `reports/table_baseline_comparison.md`.

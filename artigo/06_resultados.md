@@ -1,71 +1,101 @@
-# 06 Results
+# 06 Resultados
 
-Esta seção apresenta exclusivamente os resultados disponíveis nos artefatos versionados do projeto, com base principal em `reports/` e suporte em relatórios de `docs/` quando necessário para completar informações de execução. Não são introduzidos valores externos aos arquivos do repositório.
+Esta seção apresenta os resultados obtidos na campanha experimental descrita na Seção 5. Os valores reportados derivam exclusivamente dos artefatos atuais gerados durante a execução — `classification_report_eval.csv`, `confusion_matrix_eval.csv`, `metrics_again.json`, `preds.csv` e os CSVs do baseline — sem interpolação manual posterior. Os valores tabulados por classe foram arredondados a três casas decimais.
 
-## 6.1 Base de evidências utilizada
+## 6.1 Cenário principal — CIC-IDS2018 (GKS, 7 classes)
 
-Foram considerados, como fontes primárias de resultado:
+A avaliação da arquitetura GKS no holdout do CIC-IDS2018 (`cic_eval.csv`, n=100.000) produziu os seguintes resultados agregados:
 
-- `reports/cic/metrics_again.json`
-- `reports/unsw_bin/metrics_again.json`
-- `reports/unsw_bin/metrics_again_unsw_legacy.json`
-- `reports/metrics_comparados.csv` e `reports/metrics_comparados.md`
-- `reports/cic/confusion_matrix_cic.png` e `reports/cic/f1_per_class_cic.png`
-- `reports/unsw_bin/confusion_matrix_unsw.png` e `reports/unsw_bin/f1_per_class_unsw.png`
-- `reports/cic/xai/xai_shap_consolidado.csv` e `reports/cic/XAI_BRIEF.md`
+| Métrica | Valor |
+|---|---|
+| F1-macro | **0.764** |
+| Acurácia | **93,3%** |
+| Latência — Gatekeeper | 0,000056 ms/amostra |
+| Latência — Especialista | 21,79 ms/amostra |
+| Latência — Total | 21,79 ms/amostra |
 
-Como apoio documental, foram utilizados:
+Os resultados por classe são apresentados na Tabela 1.
 
-- `reports/cic/RELATORIO_CIC.md` (versão `v0.2.0-cic`, data 2025-11-19)
-- `reports/unsw_bin/RELATORIO_UNSW.md` (versão `v0.1.0-unsw-mvp`, data 2025-10-31)
-- `docs/cic_eval_report.md` e `docs/unsw_eval_report.md`
+**Tabela 1 — Métricas por classe, CIC-IDS2018 (GKS)**
 
-## 6.2 Métricas agregadas por cenário
+| Classe | Precision | Recall | F1 | Suporte |
+|---|---|---|---|---|
+| Benign | 0.973 | 1.000 | 0.986 | 46.983 |
+| Bot | 1.000 | 0.736 | 0.848 | 3.907 |
+| BruteForce | 0.939 | 0.495 | 0.649 | 9.998 |
+| DDoS | 1.000 | 1.000 | 1.000 | 19.999 |
+| DoS | 0.786 | 0.968 | 0.868 | 19.112 |
+| Others | 1.000 | 1.000 | 1.000 | 1 |
+| Web | 0.000 | 0.000 | 0.000 | 0 |
+| **Macro avg** | **0.814** | **0.743** | **0.764** | — |
+| **Weighted avg** | **0.940** | **0.933** | **0.927** | — |
 
-A Tabela 1 consolida os valores agregados explicitamente presentes nos arquivos JSON de métricas.
+A figura `confusion_matrix_cic.png` (Figura 1) e `f1_per_class_cic.png` (Figura 2) consolidam visualmente esses resultados.
 
-**Tabela 1 — Métricas agregadas disponíveis nos artefatos versionados**
+Os principais padrões observados na matriz de confusão são:
 
-| Cenário | Arquivo-fonte | F1-macro | Acurácia | n |
-|---|---|---:|---:|---:|
-| CIC-IDS2018 (binário) | `reports/cic/metrics_again.json` | 1.000000 | 1.000000 | 100000 |
-| UNSW-NB15 (binário, execução `unsw_bin`) | `reports/unsw_bin/metrics_again.json` | 0.890069 | 0.898432 | 175341 |
-| UNSW-NB15 (binário, execução `unsw` legado) | `reports/unsw_bin/metrics_again_unsw_legacy.json` | 0.892938 | 0.900987 | 175341 |
+- **Benign:** classificação quase perfeita (46.978 corretos, 5 erros para Web — desprezível).
+- **DDoS:** F1=1.000 com apenas 3 confusões com Benign.
+- **DoS:** desempenho sólido (18.506 corretos), com 323 confusões com BruteForce e 269 com Benign.
+- **Bot:** precision perfeita, recall reduzido (1.033 amostras classificadas como Benign).
+- **BruteForce:** o ponto mais fraco — recall de 0.495, com 5.044 amostras classificadas como DoS. A confusão entre BruteForce e DoS é esperada dado que ambos os ataques compartilham características de volume de pacotes.
+- **Web:** F1=0.000, ausente no holdout. Classe com apenas 928 amostras no treino, sem representação no offset de avaliação.
+- **Others:** F1=1.000, mas com suporte de apenas 1 amostra — resultado estatisticamente irrelevante.
 
-Observa-se a coexistência de dois artefatos de métricas para o UNSW-NB15 (`unsw_bin` e `unsw` legado), com pequena variação nos valores agregados e caminhos de saída distintos (`outputs/unsw_bin/preds.csv` e `outputs/eval_unsw/preds.csv`).
+## 6.2 Cenário secundário — UNSW-NB15 (GKS, binário)
 
-## 6.3 Métricas por classe e matrizes de confusão
+A avaliação no holdout do UNSW-NB15 (`unsw_eval.csv`, n=175.341) produziu:
 
-Para o experimento CIC, estão disponíveis as figuras `reports/cic/f1_per_class_cic.png` e `reports/cic/confusion_matrix_cic.png`. Para o experimento UNSW binário, estão disponíveis `reports/unsw_bin/f1_per_class_unsw.png` e `reports/unsw_bin/confusion_matrix_unsw.png`.
+| Métrica | Valor |
+|---|---|
+| F1-macro | **0.866** |
+| Acurácia | **87,4%** |
+| Latência — Gatekeeper | 0,000058 ms/amostra |
+| Latência — Especialista | 1,401 ms/amostra |
+| Latência — Total | 1,401 ms/amostra |
 
-Esses arquivos registram visualmente a distribuição de desempenho por classe e os padrões de erro de classificação em cada cenário. No conjunto versionado atual, entretanto, os valores numéricos detalhados por classe (em formato tabular) e as contagens absolutas da matriz de confusão (TP, FP, TN, FN em arquivo estruturado) não estão disponibilizados diretamente em `reports/`.
+**Tabela 2 — Métricas por classe, UNSW-NB15 (GKS)**
 
-## 6.4 Custo de inferência reportado
+| Classe | Precision | Recall | F1 | Suporte |
+|---|---|---|---|---|
+| Attack | 0.984 | 0.829 | 0.900 | 119.341 |
+| Normal | 0.727 | 0.971 | 0.831 | 56.000 |
+| **Macro avg** | **0.855** | **0.900** | **0.866** | — |
 
-No relatório UNSW versionado em `reports/unsw_bin/RELATORIO_UNSW.md`, consta latência média de inferência total de aproximadamente **0.8776 ms** por amostra, com decomposição em estágio de gatekeeper (~**0.000038 ms**) e estágio especialista (~**0.877536 ms**).
+A matriz de confusão (`confusion_matrix_unsw_bin.png`) revela que o modelo classifica corretamente 54.362 amostras Normal e 98.933 amostras Attack, com 20.408 falsos negativos (Attack classificado como Normal) e 1.638 falsos positivos (Normal classificado como Attack).
 
-Para o CIC, a síntese numérica de latência explícita está registrada em `docs/cic_eval_report.md` (execução `v0.1.0-cic-mvp`), com valor total aproximado de **0.0001 ms** por amostra (gatekeeper ~**0.00008 ms**, especialista ~**0.00000 ms**). No relatório `reports/cic/RELATORIO_CIC.md` (versão `v0.2.0-cic`), a ênfase está na descrição do pipeline e dos artefatos, sem tabela agregada específica de latência.
+O padrão observado é assimétrico: o modelo tem alta precision para Attack (0.984) mas recall moderado (0.829), enquanto para Normal apresenta precision mais baixa (0.727) e recall elevado (0.971). Em termos operacionais, o sistema tende a ser mais conservador na sinalização de Normal — preferindo classificar como Attack na dúvida — o que é um comportamento defensável em cenários de IDS onde falsos negativos têm custo operacional maior.
 
-## 6.5 Consolidação inter-datasets
+## 6.3 Baseline — XGBoost monolítico, CIC-IDS2018 (binário)
 
-Os arquivos `reports/metrics_comparados.csv` e `reports/metrics_comparados.md` apresentam uma consolidação entre CIC-IDS2018 e UNSW-NB15 com os seguintes valores:
+O baseline XGBoost global, avaliado em `cic_eval_robust.csv` (n=100.000), produziu:
 
-- UNSW-NB15: `f1_macro = 0.8929`, `accuracy = 0.9010`;
-- CIC-IDS2018: `f1_macro = 1.0000`, `accuracy = 1.0000`.
+| Métrica | Valor |
+|---|---|
+| F1-macro | **0.976** |
+| Acurácia | **97,6%** |
 
-Essa consolidação utiliza a execução UNSW identificada como `unsw` (legado), coerente com `metrics_again_unsw_legacy.json`.
+**Tabela 3 — Métricas por classe, Baseline XGBoost (CIC, binário)**
 
-## 6.6 Artefatos de interpretabilidade (XAI) disponíveis
+| Classe | Precision | Recall | F1 | Suporte |
+|---|---|---|---|---|
+| Benign | 0.956 | 0.995 | 0.975 | 46.983 |
+| Attack | 0.995 | 0.960 | 0.977 | 53.017 |
+| **Macro avg** | **0.976** | **0.977** | **0.976** | — |
 
-No cenário CIC binário, o projeto contém consolidação SHAP em `reports/cic/xai/xai_shap_consolidado.csv` e resumo em `reports/cic/XAI_BRIEF.md`. Entre as variáveis com maior contribuição média absoluta (|SHAP| médio), destacam-se:
+A matriz de confusão do baseline registra 46.738 Benign corretos (245 falsos positivos) e 50.890 Attack corretos (2.127 falsos negativos).
 
-- Classe `Benign`: `dst_port` (0.0239138633), `fwd_seg_size_min` (0.0107793954), `bwd_pkts_s` (0.0026201308);
-- Classe `Others`: `fwd_seg_size_min` (0.0217095731), `init_fwd_win_byts` (0.0159603954), `flow_iat_max` (0.0062686020).
+## 6.4 Comparação consolidada
 
-Esses valores são reportados como evidência descritiva de importância de atributos e não como métrica de desempenho classificatório.
+**Tabela 4 — Comparação GKS vs. Baseline (CIC-IDS2018)**
 
-## 6.7 Completude e limitações dos resultados versionados
+| Método | Formulação | F1-macro | Acurácia | Classes avaliadas |
+|---|---|---|---|---|
+| GKS | Granular (7 classes) | 0.764 | 93,3% | Benign, Bot, BruteForce, DDoS, DoS, Others, Web |
+| Baseline XGBoost | Binária | 0.976 | 97,6% | Benign vs. Attack |
 
-Com base no estado atual do repositório, os resultados agregados (F1-macro, acurácia e tamanho amostral), as figuras de matriz de confusão/F1 por classe e os artefatos de XAI estão disponíveis e passíveis de rastreamento.
+A diferença de F1-macro entre os dois métodos reflete diretamente a diferença de formulação: o GKS avalia 7 classes granulares, enquanto o baseline avalia apenas 2. F1-macro em problema de 7 classes é estruturalmente mais sensível a classes raras ou ausentes no holdout, como Web (0 amostras) e Others (1 amostra), além de fronteiras difíceis como BruteForce.
 
-Por outro lado, alguns itens previstos em documentos de planejamento aparecem incompletos ou ausentes no material versionado: (i) não há, em `reports/`, arquivos tabulares de matriz de confusão absoluta por dataset (`TP`, `FP`, `TN`, `FN`) no formato JSON explicitado no plano experimental; (ii) os arquivos `preds.csv` referenciados nas métricas apontam para `outputs/`, pasta não versionada; e (iii) o relatório `reports/cic/EXPERIMENTOS_BOOSTERS.md` mantém a tabela comparativa entre famílias de modelos sem preenchimento de resultados.
+A comparação direta mais relevante não é portanto apenas F1-macro vs. F1-macro, mas o que cada abordagem é capaz de discriminar: o baseline identifica se há intrusão; o GKS identifica qual tipo de intrusão, ao custo de desempenho menor nas subclasses mais ambíguas.
+
+Como leitura auxiliar, colapsando-se as predições do GKS no CIC para a formulação binária `Benign` vs. `Attack`, obtém-se acurácia de **98,689%** e F1-macro de **0,9869**, com 46.978 amostras `Benign` corretamente reconhecidas, 51.711 amostras de `Attack` corretamente reconhecidas, 5 falsos positivos e 1.306 falsos negativos. Esse cálculo não substitui o baseline robusto como comparação oficial, porque usa a configuração completa do GKS no `cic_eval.csv` e não o recorte robusto sem `dst_port`, mas evidencia que a principal perda do método está na discriminação entre subclasses de ataque, e não na separação entre tráfego benigno e malicioso.

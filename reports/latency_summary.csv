@@ -1,0 +1,4 @@
+method,dataset,formulation,latency_stage1_ms,latency_stage2_ms,latency_total_ms,note,source
+GKS,CIC-IDS2018,multiclasse (7 classes),0.000056,21.788813,21.788869,Latencia dominada pelo especialista.,outputs/eval_cic/preds.csv
+GKS,UNSW-NB15,binaria,0.000058,1.401346,1.401404,Latencia dominada pelo especialista.,outputs/eval_unsw/preds.csv
+XGBoost global,CIC-IDS2018 robust,binaria robusta,NA,NA,NA,Nao ha medicao de latencia no artefato atual do baseline.,outputs/cic_robust_xgb_baseline/metrics_cic_robust_xgb_baseline.csv

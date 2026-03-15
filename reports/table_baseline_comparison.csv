@@ -1,0 +1,4 @@
+row_type,method,dataset,formulation,precision_macro,recall_macro,f1_macro,accuracy,n,latency_total_ms,comparability_note,source
+official_main,GKS,CIC-IDS2018,multiclasse (7 classes),0.813935,0.742720,0.764278,0.933080,100000,21.788869,"Comparacao oficial do paper, mas assimetrica: 7 classes no GKS contra 2 classes no baseline.",reports/cic/metrics_again.json; outputs/eval_cic/preds.csv
+official_baseline,XGBoost global,CIC-IDS2018 robust,binaria robusta,0.975840,0.977333,0.976239,0.976280,100000,NA,Baseline oficial no recorte sem dst_port; nao ha medicao de latencia no snapshot atual.,outputs/cic_robust_xgb_baseline/metrics_cic_robust_xgb_baseline.csv
+auxiliary_derived,GKS colapsado,CIC-IDS2018,binaria derivada (Benign vs Attack),0.986428,0.987630,0.986861,0.986890,100000,21.788869,Leitura auxiliar derivada do preds.csv multiclasse; nao substitui o baseline robusto oficial.,outputs/eval_cic/preds.csv

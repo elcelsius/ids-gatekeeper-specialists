@@ -3,8 +3,8 @@
   "accuracy": 0.8742678552078521,
   "n": 175341,
   "labels": [
-    "Benign",
-    "Others"
+    "Normal",
+    "Attack"
   ],
   "preds_csv": "outputs/eval_unsw/preds.csv",
   "out_dir": "reports/unsw_bin",

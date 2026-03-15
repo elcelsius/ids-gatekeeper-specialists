@@ -6,7 +6,7 @@ Este documento define a estratégia de execução experimental do artigo, com o 
 
 O foco do artigo é Inteligência Artificial aplicada a problemas complexos de classificação, utilizando detecção de intrusões em redes como estudo de caso. Assim, a execução experimental deve produzir evidências suficientes para sustentar, de forma conservadora, a análise da arquitetura em dois estágios baseada em gatekeeper e especialistas.
 
-Este plano parte do princípio de que o manuscrito já existe em versão avançada, mas que a campanha experimental final do paper ainda precisa ser consolidada.
+Este plano parte do princípio de que o manuscrito já existe em versão avançada e que o snapshot atual já materializa os três blocos centrais do paper (CIC multiclasse, UNSW binário e baseline robusto). O trabalho remanescente concentra-se em consolidar governança, tabelas sintéticas e rastreabilidade final sem perder coerência com os artefatos já produzidos.
 
 ---
 
@@ -45,7 +45,7 @@ Essa pergunta deve ser sustentada por:
 
 ### 4.1 Cenário principal
 - **Dataset principal:** CIC-IDS2018
-- **Formulação principal:** binária
+- **Formulação principal:** multiclasse agregada (7 classes)
 - **Arquitetura principal:** gatekeeper + especialistas
 
 ### 4.2 Cenário secundário
@@ -56,6 +56,8 @@ Essa pergunta deve ser sustentada por:
 ### 4.3 Baseline obrigatório
 Pelo menos um baseline monolítico comparável deve ser incluído.
 
+No snapshot atual, o baseline oficial já suportado é o XGBoost global no recorte robusto do CIC (`scripts/baseline_xgb_cic_robust.py`).
+
 Prioridade:
 1. XGBoost global, se já houver suporte no projeto;
 2. outro classificador global já existente no pipeline;
@@ -63,7 +65,7 @@ Prioridade:
 
 ### 4.4 Escopo excluído da rodada principal
 Não faz parte do núcleo mínimo desta campanha:
-- multiclasses como eixo principal;
+- taxonomias mais granulares do que as sete classes já consolidadas no CIC;
 - excesso de variações ablatórias;
 - experimentos exploratórios sem ligação com o paper;
 - expansão de datasets sem necessidade.
@@ -91,6 +93,8 @@ Baseline e arquitetura principal devem ser comparados em condições compatívei
 
 ### 5.4 Rastreabilidade
 Todo resultado usado no paper deve apontar para artefato concreto no repositório.
+
+No snapshot atual, `reports/README.md` deve ser usado como índice editorial para distinguir o pacote oficial do paper dos artefatos legados mantidos apenas por histórico ou apoio complementar.
 
 ### 5.5 Honestidade experimental
 Se algum artefato não for gerado, isso deve ser tratado como lacuna real, não mascarado no manuscrito.
@@ -158,7 +162,7 @@ Um protocolo fixo contendo:
 ## Fase 3 — Execução do cenário principal
 
 ### Objetivo
-Rodar o pipeline principal no CIC-IDS2018 binário.
+Rodar o pipeline principal no CIC-IDS2018 multiclasse agregado.
 
 ### Tarefas
 - executar preparação dos dados;
@@ -426,19 +430,12 @@ O projeto estará pronto para submissão quando:
 
 ## 12. Próximo passo operacional
 
-O próximo passo após este plano é criar um documento derivado chamado, por exemplo:
+O próximo passo após este plano é manter o documento derivado já existente `artigo/checklist_execucao_experimental.md` sincronizado com o snapshot real do projeto, preenchendo:
 
-- `artigo/checklist_execucao_experimental.md`
-
-ou
-
-- `docs/checklist_execucao_paper.md`
-
-contendo:
-- scripts que serão rodados;
-- ordem exata;
+- scripts efetivamente usados;
+- ordem real ou reexecutável;
 - status de cada etapa;
-- artefatos esperados;
-- observações de falha.
+- artefatos comprovados;
+- lacunas de governança que ainda faltam fechar.
 
-Esse checklist será o documento usado no dia a dia da execução experimental.
+Esse checklist deve seguir sendo o documento de uso operacional no dia a dia da auditoria e de eventuais reexecuções.
