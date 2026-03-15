@@ -21,6 +21,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# --- Claude Code (configurações locais) ---
+.claude/settings.local.json
+
 # --- Build / Test ---
 build/
 dist/
